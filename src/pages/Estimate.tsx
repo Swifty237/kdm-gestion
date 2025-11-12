@@ -7,12 +7,19 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 // import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Send } from 'lucide-react';
+import { Send, LogOut } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
-const FormulaireDevis = () => {
+const Estimate = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken'); // Supprime le token
+    navigate('/'); // Retour à la page de login
+  };
 
   const [departData, setDepartData] = useState({
     surface: '',
@@ -208,7 +215,12 @@ const FormulaireDevis = () => {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <section className="py-8 lg:py-16 px-4 sm:px-8 lg:px-16 mt-8">
+      <section className="py-8 lg:py-16 px-4 sm:px-8 lg:px-16 mt-8 flex flex-col items-end">
+        <Button type="button" onClick={handleLogout} className="bg-[#001964] hover:bg-[#001964]/90 text-sm lg:text-base mb-8" size="lg">
+          <LogOut className="mr-2 h-4 w-4" />
+          Déconnexion
+        </Button>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-xl lg:text-2xl text-[#001964]">Demande de devis</CardTitle>
@@ -666,4 +678,4 @@ const FormulaireDevis = () => {
   );
 };
 
-export default FormulaireDevis;
+export default Estimate;
