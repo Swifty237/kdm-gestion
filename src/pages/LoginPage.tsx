@@ -1,8 +1,8 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Send } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { useState } from 'react';
 
 const LoginPage = () => {
@@ -39,10 +39,17 @@ const LoginPage = () => {
         // Stocke le token (ou autre info utile)
         if (result.token) {
           localStorage.setItem('authToken', result.token);
+          localStorage.setItem("userLogin", credentials.login);
         }
 
         setCredentials({ login: '', password: '' });
-        navigate('/estimate'); // ✅ Redirection après connexion
+
+        if (credentials.login === "admin") {
+          navigate("/administration");
+        } else {
+          navigate("/estimate");
+        }
+
       } else {
         alert('Erreur : ' + (result.error || 'Identifiants incorrects'));
       }
@@ -56,11 +63,9 @@ const LoginPage = () => {
 
   return (
     <div className="flex flex-col justify-center items-center h-[100vh]">
-      <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-[#001964] underline">
-          Interface de gestion — Connexion
-        </h2>
-      </div>
+      <h2 className="text-4xl font-bold text-[#001964] underline">
+        Interface de gestion / administration
+      </h2>
 
       <section className="py-8 lg:py-16 px-4 sm:px-8 lg:px-16 mb-8 lg:mb-16 w-full">
         <div className="max-w-6xl mx-auto">
@@ -68,6 +73,7 @@ const LoginPage = () => {
             <div className="space-y-6 lg:space-y-8 order-2 lg:order-1">
               <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 gap-3 lg:gap-4">
+
                   <div className="space-y-2">
                     <Label htmlFor="login" className="text-xl font-bold">Identifiant</Label>
                     <Input
@@ -103,18 +109,11 @@ const LoginPage = () => {
                 >
                   {loading ? 'Connexion...' : (
                     <>
-                      <Send className="mr-2 h-4 w-4" />
+                      <LogIn className="mr-2 h-4 w-4" />
                       Connexion
                     </>
                   )}
                 </Button>
-
-                <p className="mt-4 text-center">
-                  Pas encore inscris ?{" "}
-                  <Link to="/register" className="text-[#001964] underline font-semibold">
-                    S'inscrire
-                  </Link>
-                </p>
 
               </form>
             </div>

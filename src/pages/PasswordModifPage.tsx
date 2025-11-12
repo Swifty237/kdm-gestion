@@ -6,14 +6,15 @@ import { MoveLeft, Send } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
-const RegistrationPage = () => {
+const PasswordModifPage = () => {
     const { toast } = useToast();
     const navigate = useNavigate();
 
     const [credentials, setCredentials] = useState({
         login: '',
         password: '',
-        confirmPassword: ''
+        newPassword: '',
+        confirmNewPassword: ''
     });
 
     const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ const RegistrationPage = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (credentials.password !== credentials.confirmPassword) {
+        if (credentials.newPassword !== credentials.confirmNewPassword) {
             alert("Les mots de passe ne correspondent pas !");
             return;
         }
@@ -35,34 +36,36 @@ const RegistrationPage = () => {
         const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
 
         try {
-            const response = await fetch(`${API_URL}/api/register`, {
+            const response = await fetch(`${API_URL}/api/passwordModif`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     login: credentials.login,
-                    password: credentials.password
+                    password: credentials.password,
+                    newPassword: credentials.newPassword
                 }),
             });
 
             const result = await response.json();
 
             if (response.ok) {
+
                 toast({
-                    title: "Utilisateur créé avec succès 🎉",
-                    description: "Vous pouvez maintenant vous connecter avec vos identifiants.",
+                    title: "Mot de passe modifié avec succès",
+                    description: "Vous pouvez maintenant vous reconnecter avec votre nouveau mot de passe.",
                 });
 
                 // Réinitialise les champs
-                setCredentials({ login: '', password: '', confirmPassword: '' });
+                setCredentials({ login: '', password: '', newPassword: '', confirmNewPassword: '' });
 
                 // Redirige vers la page de login
-                navigate('/administration');
+                navigate('/estimate');
             } else {
-                alert('Erreur : ' + (result.error || 'Impossible de créer le compte'));
+                alert('Erreur : ' + (result.error || 'Impossible de modifier le mot de passe'));
             }
         } catch (err) {
             console.error(err);
-            alert("Erreur réseau lors de la création du compte.");
+            alert("Erreur réseau lors de la modification du mot de passe");
         } finally {
             setLoading(false);
         }
@@ -72,13 +75,13 @@ const RegistrationPage = () => {
         <div className="flex flex-col justify-center items-center h-[100vh]">
 
             <div className="w-[55%] flex">
-                <Link to="/administration" className="text-[#001964] underline font-semibold w-[3em]">
+                <Link to="/estimate" className="text-[#001964] underline font-semibold w-[3em]">
                     <MoveLeft className="mr-2 h-8 w-8" />
                 </Link>
             </div>
 
             <h2 className="text-4xl font-bold text-[#001964] underline text-center">
-                Interface d'administration
+                Interface de gestion
             </h2>
 
             <section className="py-8 lg:py-16 px-4 sm:px-8 lg:px-16 mb-8 lg:mb-16 w-full">
@@ -89,7 +92,7 @@ const RegistrationPage = () => {
                                 <div className="grid grid-cols-1 gap-3 lg:gap-4">
 
                                     <p className="text-2xl font-bold text-[#001964]">
-                                        Création d'un nouveau gestionnaire
+                                        Création du nouveau mot de passe
                                     </p>
 
                                     <div className="space-y-2">
@@ -113,21 +116,35 @@ const RegistrationPage = () => {
                                             type="password"
                                             value={credentials.password}
                                             onChange={handleInputChange}
-                                            placeholder="Entrez votre mot de passe"
+                                            placeholder="Entrez votre mot de passe actuel"
                                             className="text-xl lg:text-base"
                                             required
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="confirmPassword" className="text-xl font-bold">Confirmez le mot de passe</Label>
+                                        <Label htmlFor="newPassword" className="text-xl font-bold">Confirmez le mot de passe</Label>
                                         <Input
-                                            id="confirmPassword"
-                                            name="confirmPassword"
+                                            id="newPassword"
+                                            name="newPassword"
                                             type="password"
-                                            value={credentials.confirmPassword}
+                                            value={credentials.newPassword}
                                             onChange={handleInputChange}
-                                            placeholder="Confirmez votre mot de passe"
+                                            placeholder="Entrez le nouveau mot de passe"
+                                            className="text-xl lg:text-base"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="confirmNewPassword" className="text-xl font-bold">Confirmez le mot de passe</Label>
+                                        <Input
+                                            id="confirmNewPassword"
+                                            name="confirmNewPassword"
+                                            type="password"
+                                            value={credentials.confirmNewPassword}
+                                            onChange={handleInputChange}
+                                            placeholder="Confirmer le nouveau mot de passe"
                                             className="text-xl lg:text-base"
                                             required
                                         />
@@ -169,4 +186,4 @@ const RegistrationPage = () => {
     );
 };
 
-export default RegistrationPage;
+export default PasswordModifPage;
