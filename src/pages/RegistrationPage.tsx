@@ -56,7 +56,7 @@ const RegistrationPage = () => {
                 setCredentials({ login: '', password: '', confirmPassword: '' });
 
                 // Redirige vers la page de login
-                navigate('/estimate');
+                navigate('/');
             } else {
                 alert('Erreur : ' + (result.error || 'Impossible de créer le compte'));
             }
