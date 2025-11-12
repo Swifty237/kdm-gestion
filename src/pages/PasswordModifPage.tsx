@@ -123,7 +123,7 @@ const PasswordModifPage = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="newPassword" className="text-xl font-bold">Confirmez le mot de passe</Label>
+                                        <Label htmlFor="newPassword" className="text-xl font-bold">Nouveau mot de passe</Label>
                                         <Input
                                             id="newPassword"
                                             name="newPassword"
@@ -137,14 +137,14 @@ const PasswordModifPage = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="confirmNewPassword" className="text-xl font-bold">Confirmez le mot de passe</Label>
+                                        <Label htmlFor="confirmNewPassword" className="text-xl font-bold">Confirmez le nouveau mot de passe</Label>
                                         <Input
                                             id="confirmNewPassword"
                                             name="confirmNewPassword"
                                             type="password"
                                             value={credentials.confirmNewPassword}
                                             onChange={handleInputChange}
-                                            placeholder="Confirmer le nouveau mot de passe"
+                                            placeholder="Confirmez le nouveau mot de passe"
                                             className="text-xl lg:text-base"
                                             required
                                         />
