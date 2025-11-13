@@ -49,7 +49,7 @@ const App = () => {
         console.log("Initialisation de l’admin en cours…");
 
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/api/initAdmin`,
+          `${import.meta.env.VITE_KDM_SERVER_URI}/api/initAdmin`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
