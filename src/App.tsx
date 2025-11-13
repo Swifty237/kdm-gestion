@@ -38,11 +38,11 @@ const App = () => {
     }
 
     // Ne lance l’appel qu’une seule fois par navigateur
-    const alreadyInitialized = localStorage.getItem("adminInitDone");
-    if (alreadyInitialized) {
-      console.log("Admin déjà initialisé sur ce navigateur.");
-      return;
-    }
+    // const alreadyInitialized = localStorage.getItem("adminInitDone");
+    // if (alreadyInitialized) {
+    //   console.log("Admin déjà initialisé sur ce navigateur.");
+    //   return;
+    // }
 
     const initAdmin = async () => {
       try {
@@ -60,7 +60,7 @@ const App = () => {
         console.log("Réponse initAdmin :", data.message || data.error);
 
         // On enregistre que l’initialisation a été faite sur ce navigateur
-        localStorage.setItem("adminInitDone", "true");
+        // localStorage.setItem("adminInitDone", "true");
       } catch (err) {
         console.error("Erreur lors de l'initialisation admin :", err);
       }
