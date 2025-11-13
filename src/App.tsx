@@ -24,7 +24,7 @@ const AdminRoute = ({ children }) => {
   const token = localStorage.getItem('authToken');
   const userLogin = localStorage.getItem('userLogin');
 
-  return token && userLogin === "admin" ? (
+  return token && userLogin === process.env.KDM_ADMIN ? (
     children
   ) : (
     <Navigate to="/" replace />
