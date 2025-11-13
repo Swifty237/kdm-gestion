@@ -11,7 +11,9 @@ const RegistrationPage = () => {
     const navigate = useNavigate();
 
     const [credentials, setCredentials] = useState({
-        login: '',
+        userName: '',
+        userFirstname: '',
+        email: '',
         password: '',
         confirmPassword: ''
     });
@@ -39,7 +41,9 @@ const RegistrationPage = () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    login: credentials.login,
+                    userName: credentials.userName,
+                    userFirstname: credentials.userFirstname,
+                    email: credentials.email,
                     password: credentials.password
                 }),
             });
@@ -48,12 +52,12 @@ const RegistrationPage = () => {
 
             if (response.ok) {
                 toast({
-                    title: "Utilisateur créé avec succès 🎉",
-                    description: "Vous pouvez maintenant vous connecter avec vos identifiants.",
+                    title: "Utilisateur créé avec succès",
+                    description: "Vous pouvez maintenant lui transmettre ses identifiants de connexion.",
                 });
 
                 // Réinitialise les champs
-                setCredentials({ login: '', password: '', confirmPassword: '' });
+                setCredentials({ userName: '', userFirstname: '', email: '', password: '', confirmPassword: '' });
 
                 // Redirige vers la page de login
                 navigate('/administration');
@@ -88,23 +92,54 @@ const RegistrationPage = () => {
                             <form onSubmit={handleSubmit}>
                                 <div className="grid grid-cols-1 gap-3 lg:gap-4">
 
-                                    <p className="text-2xl font-bold text-[#001964]">
+                                    <p className="text-3xl font-bold text-[#001964]">
                                         Création d'un nouveau gestionnaire
                                     </p>
 
+                                    <span className="italic text-xl"> Remplissez le formulaire avec les informations du nouveau gestionnaire et valider</span>
+
                                     <div className="space-y-2">
-                                        <Label htmlFor="login" className="text-xl font-bold">Identifiant</Label>
+                                        <Label htmlFor="userName" className="text-xl font-bold">Nom</Label>
                                         <Input
-                                            id="login"
-                                            name="login"
+                                            id="userName"
+                                            name="userName"
                                             type="text"
-                                            value={credentials.login}
+                                            value={credentials.userName}
                                             onChange={handleInputChange}
-                                            placeholder="Entrez votre identifiant"
+                                            placeholder="Entrez le nom"
                                             className="text-xl lg:text-base"
                                             required
                                         />
                                     </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="userFirstname" className="text-xl font-bold">Prénom</Label>
+                                        <Input
+                                            id="userFirstname"
+                                            name="userFirstname"
+                                            type="text"
+                                            value={credentials.userFirstname}
+                                            onChange={handleInputChange}
+                                            placeholder="Entrez le prénom"
+                                            className="text-xl lg:text-base"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email" className="text-xl font-bold">Email</Label>
+                                        <Input
+                                            id="email"
+                                            name="email"
+                                            type="email"
+                                            value={credentials.email}
+                                            onChange={handleInputChange}
+                                            placeholder="Entrez l'email"
+                                            className="text-xl lg:text-base"
+                                            required
+                                        />
+                                    </div>
+
                                     <div className="space-y-2">
                                         <Label htmlFor="password" className="text-xl font-bold">Mot de passe</Label>
                                         <Input
@@ -113,7 +148,7 @@ const RegistrationPage = () => {
                                             type="password"
                                             value={credentials.password}
                                             onChange={handleInputChange}
-                                            placeholder="Entrez votre mot de passe"
+                                            placeholder="Entrez le mot de passe"
                                             className="text-xl lg:text-base"
                                             required
                                         />
