@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,31 +15,39 @@ import { useEffect } from "react";
 const queryClient = new QueryClient();
 
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem("authToken");
   return token ? children : <Navigate to="/" replace />;
 };
 
 const AdminRoute = ({ children }) => {
-  const token = localStorage.getItem('authToken');
-  const userLogin = localStorage.getItem('userLogin');
-
-  return token && userLogin === process.env.KDM_ADMIN ? (
+  const token = localStorage.getItem("authToken");
+  const userLogin = localStorage.getItem("userLogin");
+  return token && userLogin === import.meta.env.VITE_KDM_ADMIN ? (
     children
   ) : (
     <Navigate to="/" replace />
   );
 };
 
-
 const App = () => {
-
   useEffect(() => {
-    // Ne pas exécuter en local
-    if (process.env.NODE_ENV !== "production") return;
+    // N’exécute pas en local
+    if (import.meta.env.DEV) {
+      console.log("Environnement local détecté → initAdmin ignoré");
+      return;
+    }
 
-    // Exécuter uniquement sur ton front déployé (Vercel)
+    // Ne lance l’appel qu’une seule fois par navigateur
+    const alreadyInitialized = localStorage.getItem("adminInitDone");
+    if (alreadyInitialized) {
+      console.log("Admin déjà initialisé sur ce navigateur.");
+      return;
+    }
+
     const initAdmin = async () => {
       try {
+        console.log("Initialisation de l’admin en cours…");
+
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/api/initAdmin`,
           {
@@ -50,10 +57,12 @@ const App = () => {
         );
 
         const data = await response.json();
-        console.log("initAdmin:", data.message || data.error);
+        console.log("Réponse initAdmin :", data.message || data.error);
 
+        // On enregistre que l’initialisation a été faite sur ce navigateur
+        localStorage.setItem("adminInitDone", "true");
       } catch (err) {
-        console.error("Erreur d'initialisation de l'admin :", err);
+        console.error("Erreur lors de l'initialisation admin :", err);
       }
     };
 
@@ -76,7 +85,6 @@ const App = () => {
                   <PrivateRoute>
                     <EstimatePage />
                   </PrivateRoute>
-
                 }
               />
               <Route
@@ -101,7 +109,7 @@ const App = () => {
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
-  )
+  );
 };
 
 export default App;
