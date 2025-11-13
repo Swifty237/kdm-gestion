@@ -11,6 +11,7 @@ import EstimatePage from "./pages/EstimatePage";
 import NotFound from "./pages/NotFound";
 import AdministrationPage from "./pages/AdministrationPage";
 import PasswordModifPage from "./pages/PasswordModifPage";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,33 @@ const AdminRoute = ({ children }) => {
 
 
 const App = () => {
+
+  useEffect(() => {
+    // Ne pas exécuter en local
+    if (process.env.NODE_ENV !== "production") return;
+
+    // Exécuter uniquement sur ton front déployé (Vercel)
+    const initAdmin = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/initAdmin`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        const data = await response.json();
+        console.log("initAdmin:", data.message || data.error);
+
+      } catch (err) {
+        console.error("Erreur d'initialisation de l'admin :", err);
+      }
+    };
+
+    initAdmin();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
