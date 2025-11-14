@@ -2,6 +2,8 @@ import { Button } from '@/components/ui/button';
 import { LogOut, UserRoundPlus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 
 interface User {
     _id: string;
@@ -52,34 +54,34 @@ const AdministrationPage = () => {
                 Interface d'administration
             </h2>
 
-            <div className="mt-8 w-[80%]">
+            <div className="mt-8 w-[80%] shadow-lg">
                 {loading ? (
                     <p>Chargement des gestionnaires...</p>
                 ) : users.length === 0 ? (
                     <p>Aucun gestionnaire trouvé.</p>
                 ) : (
-                    <table className="w-full border-collapse border border-gray-300">
-                        <thead>
-                            <tr className="bg-gray-100">
-                                <th className="border border-gray-300 p-2">Nom</th>
-                                <th className="border border-gray-300 p-2">Prénom</th>
-                                <th className="border border-gray-300 p-2">Email</th>
-                                <th className="border border-gray-300 p-2">Login</th>
-                                <th className="border border-gray-300 p-2">Créé le</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <Table className="w-full border-collapse border border-gray-300">
+                        <TableHeader>
+                            <TableRow className="bg-gray-100">
+                                <TableHead className="border border-gray-300 p-2">Nom</TableHead>
+                                <TableHead className="border border-gray-300 p-2">Prénom</TableHead>
+                                <TableHead className="border border-gray-300 p-2">Email</TableHead>
+                                <TableHead className="border border-gray-300 p-2">Login</TableHead>
+                                <TableHead className="border border-gray-300 p-2">Créé le</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {users.map(user => (
-                                <tr key={user._id}>
-                                    <td className="border border-gray-300 p-2">{user.userName}</td>
-                                    <td className="border border-gray-300 p-2">{user.userFirstname}</td>
-                                    <td className="border border-gray-300 p-2">{user.email}</td>
-                                    <td className="border border-gray-300 p-2">{user.login}</td>
-                                    <td className="border border-gray-300 p-2">{new Date(user.createdAt).toLocaleString()}</td>
-                                </tr>
+                                <TableRow key={user._id}>
+                                    <TableCell className="border border-gray-300 p-2">{user.userName}</TableCell>
+                                    <TableCell className="border border-gray-300 p-2">{user.userFirstname}</TableCell>
+                                    <TableCell className="border border-gray-300 p-2">{user.email}</TableCell>
+                                    <TableCell className="border border-gray-300 p-2">{user.login}</TableCell>
+                                    <TableCell className="border border-gray-300 p-2">{new Date(user.createdAt).toLocaleString()}</TableCell>
+                                </TableRow>
                             ))}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 )}
             </div>
 

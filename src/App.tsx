@@ -10,6 +10,7 @@ import EstimatePage from "./pages/EstimatePage";
 import NotFound from "./pages/NotFound";
 import AdministrationPage from "./pages/AdministrationPage";
 import PasswordModifPage from "./pages/PasswordModifPage";
+import EstimateDetailsPage from "./pages/EstimateDetailsPage";
 import { useEffect } from "react";
 
 const queryClient = new QueryClient();
@@ -75,6 +76,14 @@ const App = () => {
                 element={
                   <PrivateRoute>
                     <EstimatePage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/estimateDetails/:id"
+                element={
+                  <PrivateRoute>
+                    <EstimateDetailsPage />
                   </PrivateRoute>
                 }
               />

@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut, UserCog } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface Devis {
   _id: string;
@@ -11,6 +12,26 @@ interface Devis {
   telephone?: string;
   service: string;
   date?: string;
+  departure: {
+    surface: string;
+    volume: string;
+    rooms: string;
+    floor: string;
+    elevator: boolean;
+    elevatorSize: string;
+    stairsSize: string;
+    address: string;
+  };
+  arrival: {
+    floor: string;
+    elevator: boolean;
+    elevatorSize: string;
+    stairsSize: string;
+    address: string;
+    contactName: string;
+    entreprise: string;
+    date: string;
+  }
   createdAt?: string;
 }
 
@@ -73,39 +94,51 @@ const EstimatePage = () => {
       </h2>
 
       <p className="text-xl mb-8 font-bold">
-        Listes des devis
+        Demande de devis à traiter
       </p>
 
-      <div className="w-[80%] overflow-x-auto">
+      <div className="w-[80%] overflow-x-auto shadow-lg">
         {loading ? (
           <p>Chargement des devis...</p>
         ) : devisList.length === 0 ? (
           <p>Aucun devis trouvé.</p>
         ) : (
-          <table className="w-full border border-gray-300">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border p-2 text-left">Nom</th>
-                <th className="border p-2 text-left">Email</th>
-                <th className="border p-2 text-left">Entreprise</th>
-                <th className="border p-2 text-left">Téléphone</th>
-                <th className="border p-2 text-left">Service</th>
-                <th className="border p-2 text-left">Date</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="w-full border border-gray-300">
+            <TableHeader>
+              <TableRow className="bg-gray-100">
+                <TableHead className="border p-2 text-left">Nom</TableHead>
+                <TableHead className="border p-2 text-left">Email</TableHead>
+                <TableHead className="border p-2 text-left">Entreprise</TableHead>
+                <TableHead className="border p-2 text-left">Téléphone</TableHead>
+                <TableHead className="border p-2 text-left">Service</TableHead>
+                <TableHead className="border p-2 text-left">Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {devisList.map((devis) => (
-                <tr key={devis._id}>
-                  <td className="border p-2">{devis.name}</td>
-                  <td className="border p-2">{devis.email}</td>
-                  <td className="border p-2">{devis.entreprise || '-'}</td>
-                  <td className="border p-2">{devis.telephone || '-'}</td>
-                  <td className="border p-2">{devis.service}</td>
-                  <td className="border p-2">{devis.date || '-'}</td>
-                </tr>
+                <TableRow key={devis._id}>
+                  <TableCell className="border p-2">
+                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
+                  </TableCell>
+                  <TableCell className="border p-2">
+                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
+                  </TableCell>
+                  <TableCell className="border p-2">
+                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
+                  </TableCell>
+                  <TableCell className="border p-2">
+                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
+                  </TableCell>
+                  <TableCell className="border p-2">
+                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
+                  </TableCell>
+                  <TableCell className="border p-2">
+                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.date || '-'}</Link>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </div>
     </div>
