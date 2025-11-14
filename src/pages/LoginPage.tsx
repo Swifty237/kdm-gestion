@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LogIn } from 'lucide-react';
 import { useState } from 'react';
+import { Eye, EyeOff } from "lucide-react";
+
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const [credentials, setCredentials] = useState({
     login: '',
@@ -76,29 +79,50 @@ const LoginPage = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="login" className="text-xl font-bold">Identifiant</Label>
-                    <Input
-                      id="login"
-                      name="login"
-                      type="text"
-                      value={credentials.login}
-                      onChange={handleInputChange}
-                      placeholder="Entrez votre identifiant"
-                      className="text-xl lg:text-base"
-                      required
-                    />
+                    <div className="flex items-center">
+                      <Input
+                        id="login"
+                        name="login"
+                        type="text"
+                        value={credentials.login}
+                        onChange={handleInputChange}
+                        placeholder="Entrez votre identifiant"
+                        className="text-xl lg:text-base"
+                        required
+                      />
+                      {/* Faux bouton invisible pour garder l’alignement */}
+                      <button
+                        type="button"
+                        className="p-4 opacity-0 cursor-default"
+                        tabIndex={-1}
+                      >
+                        <Eye size={22} />
+                      </button>
+                    </div>
+
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="password" className="text-xl font-bold">Mot de passe</Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      value={credentials.password}
-                      onChange={handleInputChange}
-                      placeholder="Entrez votre mot de passe"
-                      className="text-xl lg:text-base"
-                      required
-                    />
+                    <div className="flex items-center">
+                      <Input
+                        id="password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        value={credentials.password}
+                        onChange={handleInputChange}
+                        placeholder="Entrez votre mot de passe"
+                        className="text-xl lg:text-base"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="text-gray-600 hover:text-gray-800 p-4"
+                      >
+                        {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <Button

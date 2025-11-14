@@ -1,6 +1,6 @@
 
 import { ReactNode } from 'react';
-// import Navigation from './Navigation';
+import Navigation from './Navigation';
 
 interface LayoutProps {
   children: ReactNode;
@@ -9,7 +9,7 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col">
-      {/* <Navigation /> */}
+      <Navigation />
       <main className="flex-1">
         {children}
       </main>

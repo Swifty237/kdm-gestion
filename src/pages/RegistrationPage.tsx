@@ -1,8 +1,8 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MoveLeft, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -75,15 +75,9 @@ const RegistrationPage = () => {
     return (
         <div className="flex flex-col justify-center items-center h-[100vh]">
 
-            <div className="w-[55%] flex">
-                <Link to="/administration" className="text-[#001964] underline font-semibold w-[3em]">
-                    <MoveLeft className="mr-2 h-8 w-8" />
-                </Link>
-            </div>
-
-            <h2 className="text-4xl font-bold text-[#001964] underline text-center">
-                Interface d'administration
-            </h2>
+            {/* <div className="w-[55%] flex">
+                
+            </div> */}
 
             <section className="py-8 lg:py-16 px-4 sm:px-8 lg:px-16 mb-8 lg:mb-16 w-full">
                 <div className="max-w-6xl mx-auto">

@@ -1,8 +1,9 @@
-import { Button } from '@/components/ui/button';
-import { LogOut, UserCog } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Archive, ArchiveRestore, Trash } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface Devis {
   _id: string;
@@ -12,38 +13,12 @@ interface Devis {
   telephone?: string;
   service: string;
   date?: string;
-  departure: {
-    surface: string;
-    volume: string;
-    rooms: string;
-    floor: string;
-    elevator: boolean;
-    elevatorSize: string;
-    stairsSize: string;
-    address: string;
-  };
-  arrival: {
-    floor: string;
-    elevator: boolean;
-    elevatorSize: string;
-    stairsSize: string;
-    address: string;
-    contactName: string;
-    entreprise: string;
-    date: string;
-  }
-  createdAt?: string;
+  archived?: boolean;  // <-- IMPORTANT
 }
 
 const EstimatePage = () => {
-  const navigate = useNavigate();
   const [devisList, setDevisList] = useState<Devis[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    navigate('/');
-  };
 
   useEffect(() => {
     const fetchDevis = async () => {
@@ -67,80 +42,137 @@ const EstimatePage = () => {
     fetchDevis();
   }, []);
 
+  // Séparation des devis
+  const devisNonArchives = devisList.filter(d => !d.archived);
+  const devisArchives = devisList.filter(d => d.archived);
+
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen p-4">
-      <div className="w-[80%] flex justify-between items-center mb-6">
-        <Button
-          type="button"
-          onClick={handleLogout}
-          className="bg-[#001964] hover:bg-[#001964]/90 text-sm lg:text-base"
-          size="lg"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Déconnexion
-        </Button>
+    <div className="flex flex-col items-center min-h-screen pt-16">
+      <Tabs defaultValue="nonTraites" className="w-[80%]">
 
-        <Link
-          to="/passwordModif"
-          className="text-[#001964] font-semibold text-2xl flex items-center"
-        >
-          <UserCog className="mr-4 h-6 w-6" />
-          Modifier le mot de passe
-        </Link>
-      </div>
+        {/* ONGLET SELECTEUR */}
+        <TabsList className="mb-6 flex bg-[white] justify-around">
+          <TabsTrigger
+            value="nonTraites"
+            className="data-[state=active]:bg-[#001964] data-[state=active]:text-white text-xl px-8 py-2">
+            Devis à traiter
+          </TabsTrigger>
+          <TabsTrigger
+            value="archives"
+            className="data-[state=active]:bg-[#001964] data-[state=active]:text-white text-xl px-8 py-2"
+          >
+            Devis archivés
+          </TabsTrigger>
+        </TabsList>
 
-      <h2 className="text-4xl font-bold text-[#001964] underline mb-8">
-        Itnterface de gestion
-      </h2>
+        {/* ONGLET 1 */}
+        <TabsContent value="nonTraites">
+          <p className="text-xl my-8 font-bold">Demande de devis à traiter</p>
+          {loading ? (
+            <p>Chargement...</p>
+          ) : (
+            <Table className="w-full border border-gray-300 shadow-lg">
+              <TableHeader>
+                <TableRow className="bg-gray-100">
+                  <TableHead className="border p-2 text-left">Nom</TableHead>
+                  <TableHead className="border p-2 text-left">Email</TableHead>
+                  <TableHead className="border p-2 text-left">Entreprise</TableHead>
+                  <TableHead className="border p-2 text-left">Téléphone</TableHead>
+                  <TableHead className="border p-2 text-left">Service</TableHead>
+                  <TableHead className="border p-2 text-left">Date</TableHead>
+                  <TableHead className="border p-2 text-center">Gestion</TableHead>
+                </TableRow>
+              </TableHeader>
 
-      <p className="text-xl mb-8 font-bold">
-        Demande de devis à traiter
-      </p>
+              <TableBody>
+                {devisNonArchives.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-4">
+                      Aucun devis à traiter.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  devisNonArchives.map((devis) => (
+                    <TableRow key={devis._id}>
+                      <TableCell className="border p-2">
+                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
+                      </TableCell>
+                      <TableCell className="border p-2">
+                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
+                      </TableCell>
+                      <TableCell className="border p-2">
+                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
+                      </TableCell>
+                      <TableCell className="border p-2">
+                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
+                      </TableCell>
+                      <TableCell className="border p-2">{devis.service}</TableCell>
+                      <TableCell className="border p-2">{devis.date || '-'}</TableCell>
 
-      <div className="w-[80%] overflow-x-auto shadow-lg">
-        {loading ? (
-          <p>Chargement des devis...</p>
-        ) : devisList.length === 0 ? (
-          <p>Aucun devis trouvé.</p>
-        ) : (
-          <Table className="w-full border border-gray-300">
+                      <TableCell className="border p-2 text-center">
+                        <Button className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
+                          <Archive className="mr-2 h-4 w-4" />
+                          Archiver
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </TabsContent>
+
+        {/* ONGLET 2 */}
+        <TabsContent value="archives">
+          <p className="text-xl my-8 font-bold">Devis archivés</p>
+
+          <Table className="w-full border border-gray-300 shadow-lg">
             <TableHeader>
               <TableRow className="bg-gray-100">
                 <TableHead className="border p-2 text-left">Nom</TableHead>
                 <TableHead className="border p-2 text-left">Email</TableHead>
-                <TableHead className="border p-2 text-left">Entreprise</TableHead>
-                <TableHead className="border p-2 text-left">Téléphone</TableHead>
                 <TableHead className="border p-2 text-left">Service</TableHead>
                 <TableHead className="border p-2 text-left">Date</TableHead>
+                <TableHead className="border p-2 text-left">Gestion</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
-              {devisList.map((devis) => (
-                <TableRow key={devis._id}>
-                  <TableCell className="border p-2">
-                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
-                  </TableCell>
-                  <TableCell className="border p-2">
-                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
-                  </TableCell>
-                  <TableCell className="border p-2">
-                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
-                  </TableCell>
-                  <TableCell className="border p-2">
-                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
-                  </TableCell>
-                  <TableCell className="border p-2">
-                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
-                  </TableCell>
-                  <TableCell className="border p-2">
-                    <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.date || '-'}</Link>
+              {devisArchives.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-4">
+                    Aucun devis archivé.
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                devisArchives.map((devis) => (
+                  <TableRow key={devis._id}>
+                    <TableCell className="border p-2">{devis.name}</TableCell>
+                    <TableCell className="border p-2">{devis.email}</TableCell>
+                    <TableCell className="border p-2">{devis.service}</TableCell>
+                    <TableCell className="border p-2">{devis.date || '-'}</TableCell>
+                    <TableCell className="border p-2">
+                      <div className="flex items-center justify-around">
+                        <Button className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
+                          <ArchiveRestore className="mr-2 h-4 w-4" />
+                          Restorer
+                        </Button>
+
+                        <Button className="bg-[#eb2f06] hover:bg-[#eb2f06]/90 text-sm">
+                          <Trash className="mr-2 h-4 w-4" />
+                          Supprimer
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
-        )}
-      </div>
+        </TabsContent>
+
+      </Tabs>
     </div>
   );
 };
