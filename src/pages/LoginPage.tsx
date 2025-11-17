@@ -107,7 +107,7 @@ const LoginPage = () => {
                         className="text-xl lg:text-base pr-12"
                         required
                       />
-                      {/* 👇 Icône dans le champ */}
+                      {/* Icône dans le champ */}
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}

@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Send } from 'lucide-react';
+import { Eye, EyeOff, Send } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,6 +17,9 @@ const RegistrationPage = () => {
         password: '',
         confirmPassword: ''
     });
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const [loading, setLoading] = useState(false);
 
@@ -134,33 +137,53 @@ const RegistrationPage = () => {
                                         />
                                     </div>
 
-                                    <div className="space-y-2">
+
+                                    <div className="space-y-2 relative">
                                         <Label htmlFor="password" className="text-xl font-bold">Mot de passe</Label>
                                         <Input
                                             id="password"
                                             name="password"
-                                            type="password"
+                                            type={showPassword ? "text" : "password"}
                                             value={credentials.password}
                                             onChange={handleInputChange}
                                             placeholder="Entrez le mot de passe"
-                                            className="text-xl lg:text-base"
+                                            className="text-xl lg:text-base pr-12"
                                             required
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword((prev) => !prev)}
+                                            className="absolute right-3 top-1/2  text-gray-600 hover:text-gray-800"
+                                            tabIndex={-1} // ne gêne pas la navigation clavier
+                                        >
+                                            {showPassword ? <Eye size={22} /> : <EyeOff size={22} />}
+                                        </button>
                                     </div>
 
-                                    <div className="space-y-2">
+
+
+                                    <div className="space-y-2 relative">
                                         <Label htmlFor="confirmPassword" className="text-xl font-bold">Confirmez le mot de passe</Label>
                                         <Input
                                             id="confirmPassword"
                                             name="confirmPassword"
-                                            type="password"
+                                            type={showConfirmPassword ? "text" : "password"}
                                             value={credentials.confirmPassword}
                                             onChange={handleInputChange}
                                             placeholder="Confirmez votre mot de passe"
-                                            className="text-xl lg:text-base"
+                                            className="text-xl lg:text-base pr-12"
                                             required
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                            className="absolute right-3 top-1/2 text-gray-600 hover:text-gray-800"
+                                            tabIndex={-1} // ne gêne pas la navigation clavier
+                                        >
+                                            {showConfirmPassword ? <Eye size={22} /> : <EyeOff size={22} />}
+                                        </button>
                                     </div>
+
                                 </div>
 
                                 <Button
