@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Send } from 'lucide-react';
+import { Eye, EyeOff, Send } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,6 +17,9 @@ const PasswordModifPage = () => {
         confirmNewPassword: ''
     });
 
+    const [showPassword, setShowPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,44 +107,78 @@ const PasswordModifPage = () => {
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="password" className="text-xl font-bold">Mot de passe</Label>
-                                        <Input
-                                            id="password"
-                                            name="password"
-                                            type="password"
-                                            value={credentials.password}
-                                            onChange={handleInputChange}
-                                            placeholder="Entrez votre mot de passe actuel"
-                                            className="text-xl lg:text-base"
-                                            required
-                                        />
+                                        <div className="relative">
+                                            <Input
+                                                id="password"
+                                                name="password"
+                                                type={showPassword ? "text" : "password"}
+                                                value={credentials.password}
+                                                onChange={handleInputChange}
+                                                placeholder="Entrez votre mot de passe actuel"
+                                                className="text-xl lg:text-base pr-12"
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword((prev) => !prev)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                                                tabIndex={-1} // ne gêne pas la navigation clavier
+                                            >
+                                                {showPassword ? <Eye size={22} /> : <EyeOff size={22} />}
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-2">
                                         <Label htmlFor="newPassword" className="text-xl font-bold">Nouveau mot de passe</Label>
-                                        <Input
-                                            id="newPassword"
-                                            name="newPassword"
-                                            type="password"
-                                            value={credentials.newPassword}
-                                            onChange={handleInputChange}
-                                            placeholder="Entrez le nouveau mot de passe"
-                                            className="text-xl lg:text-base"
-                                            required
-                                        />
+                                        <div className="relative">
+                                            <Input
+                                                id="newPassword"
+                                                name="newPassword"
+                                                type={showNewPassword ? "text" : "password"}
+                                                value={credentials.newPassword}
+                                                onChange={handleInputChange}
+                                                placeholder="Entrez le nouveau mot de passe"
+                                                className="text-xl lg:text-base pr-12"
+                                                required
+                                            />
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewPassword((prev) => !prev)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                                                tabIndex={-1} // ne gêne pas la navigation clavier
+                                            >
+                                                {showNewPassword ? <Eye size={22} /> : <EyeOff size={22} />}
+                                            </button>
+                                        </div>
+
                                     </div>
 
                                     <div className="space-y-2">
                                         <Label htmlFor="confirmNewPassword" className="text-xl font-bold">Confirmez le nouveau mot de passe</Label>
-                                        <Input
-                                            id="confirmNewPassword"
-                                            name="confirmNewPassword"
-                                            type="password"
-                                            value={credentials.confirmNewPassword}
-                                            onChange={handleInputChange}
-                                            placeholder="Confirmez le nouveau mot de passe"
-                                            className="text-xl lg:text-base"
-                                            required
-                                        />
+                                        <div className="relative">
+                                            <Input
+                                                id="confirmNewPassword"
+                                                name="confirmNewPassword"
+                                                type={showConfirmNewPassword ? "text" : "password"}
+                                                value={credentials.confirmNewPassword}
+                                                onChange={handleInputChange}
+                                                placeholder="Confirmez le nouveau mot de passe"
+                                                className="text-xl lg:text-base pr-12"
+                                                required
+                                            />
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmNewPassword((prev) => !prev)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                                                tabIndex={-1} // ne gêne pas la navigation clavier
+                                            >
+                                                {showConfirmNewPassword ? <Eye size={22} /> : <EyeOff size={22} />}
+                                            </button>
+                                        </div>
+
                                     </div>
                                 </div>
 

@@ -66,7 +66,7 @@ const LoginPage = () => {
 
   return (
     <div className="flex flex-col justify-center items-center h-[100vh]">
-      <h2 className="text-4xl font-bold text-[#001964] underline">
+      <h2 className="text-4xl font-bold text-[#001964] underline text-center">
         Interface de gestion / administration
       </h2>
 
@@ -79,7 +79,7 @@ const LoginPage = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="login" className="text-xl font-bold">Identifiant</Label>
-                    <div className="flex items-center">
+                    <div>
                       <Input
                         id="login"
                         name="login"
@@ -90,21 +90,13 @@ const LoginPage = () => {
                         className="text-xl lg:text-base"
                         required
                       />
-                      {/* Faux bouton invisible pour garder l’alignement */}
-                      <button
-                        type="button"
-                        className="p-4 opacity-0 cursor-default"
-                        tabIndex={-1}
-                      >
-                        <Eye size={22} />
-                      </button>
                     </div>
 
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="password" className="text-xl font-bold">Mot de passe</Label>
-                    <div className="flex items-center">
+                    <div className="relative">
                       <Input
                         id="password"
                         name="password"
@@ -112,15 +104,17 @@ const LoginPage = () => {
                         value={credentials.password}
                         onChange={handleInputChange}
                         placeholder="Entrez votre mot de passe"
-                        className="text-xl lg:text-base"
+                        className="text-xl lg:text-base pr-12"
                         required
                       />
+                      {/* 👇 Icône dans le champ */}
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="text-gray-600 hover:text-gray-800 p-4"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                        tabIndex={-1} // ne gêne pas la navigation clavier
                       >
-                        {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+                        {showPassword ? <Eye size={22} /> : <EyeOff size={22} />}
                       </button>
                     </div>
                   </div>
