@@ -33,6 +33,7 @@ const EstimatePage = () => {
 
 
   const archiveDevis = async (id: string) => {
+    setLoading(true)
 
     try {
       const response = await fetch(`${API_URL}/api/devis/${id}/archive`, {
@@ -45,15 +46,20 @@ const EstimatePage = () => {
         setDevisList(prev =>
           prev.map(d => d._id === id ? { ...d, archived: true } : d)
         );
+        setLoading(false);
       } else {
+
         console.error("Erreur lors de l'archivage");
+        setLoading(false);
       }
     } catch (err) {
       console.error("Erreur réseau :", err);
+      setLoading(false);
     }
   };
 
   const unArchiveDevis = async (id: string) => {
+    setLoading(true);
     try {
       const response = await fetch(`${API_URL}/api/devis/${id}/unarchive`, {
         method: "PATCH",
@@ -65,15 +71,19 @@ const EstimatePage = () => {
         setDevisList(prev =>
           prev.map(d => d._id === id ? { ...d, archived: false } : d)
         );
+        setLoading(false);
       } else {
         console.error("Erreur lors de la désarchivage");
+        setLoading(false);
       }
     } catch (err) {
       console.error("Erreur réseau :", err);
+      setLoading(false);
     }
   };
 
   const deleteDevis = async (id: string) => {
+    setLoading(true);
     try {
       const response = await fetch(`${API_URL}/api/devis/${id}`, {
         method: "DELETE",
@@ -81,11 +91,14 @@ const EstimatePage = () => {
 
       if (response.ok) {
         setDevisList(prev => prev.filter(d => d._id !== id));
+        setLoading(false);
       } else {
         console.error("Erreur lors de la suppression");
+        setLoading(false);
       }
     } catch (err) {
       console.error("Erreur réseau :", err);
+      setLoading(false);
     }
   };
 
@@ -138,7 +151,7 @@ const EstimatePage = () => {
         <TabsContent value="nonTraites">
           <p className="text-xl my-8 font-bold text-center">Demande de devis à traiter</p>
           {loading ? (
-            <p>Chargement...</p>
+            <p className="text-center">Chargement...</p>
           ) : (
             <Table className="w-full border border-gray-300 shadow-lg">
               <TableHeader>
@@ -198,64 +211,68 @@ const EstimatePage = () => {
         <TabsContent value="archives">
           <p className="text-xl my-8 font-bold text-center">Devis archivés</p>
 
-          <Table className="w-full border border-gray-300 shadow-lg">
-            <TableHeader>
-              <TableRow className="bg-gray-100">
-                <TableHead className="border p-2 text-left">Nom</TableHead>
-                <TableHead className="border p-2 text-left">Service</TableHead>
-                <TableHead className="border p-2 text-left">Email</TableHead>
-                <TableHead className="border p-2 text-left">Entreprise</TableHead>
-                <TableHead className="border p-2 text-left">Téléphone</TableHead>
-                <TableHead className="border p-2 text-left">Date</TableHead>
-                <TableHead className="border p-2 text-center">Gestion</TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {devisArchives.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-4">
-                    Aucun devis archivé.
-                  </TableCell>
+          {loading ? (
+            <p className="text-center">Chargement...</p>
+          ) : (
+            <Table className="w-full border border-gray-300 shadow-lg">
+              <TableHeader>
+                <TableRow className="bg-gray-100">
+                  <TableHead className="border p-2 text-left">Nom</TableHead>
+                  <TableHead className="border p-2 text-left">Service</TableHead>
+                  <TableHead className="border p-2 text-left">Email</TableHead>
+                  <TableHead className="border p-2 text-left">Entreprise</TableHead>
+                  <TableHead className="border p-2 text-left">Téléphone</TableHead>
+                  <TableHead className="border p-2 text-left">Date</TableHead>
+                  <TableHead className="border p-2 text-center">Gestion</TableHead>
                 </TableRow>
-              ) : (
-                devisArchives.map((devis) => (
-                  <TableRow key={devis._id}>
-                    <TableCell className="border p-2">
-                      <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
-                    </TableCell>
-                    <TableCell className="border p-2">
-                      <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
-                    </TableCell>
-                    <TableCell className="border p-2">
-                      <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
-                    </TableCell>
-                    <TableCell className="border p-2">
-                      <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
-                    </TableCell>
-                    <TableCell className="border p-2">
-                      <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
-                    </TableCell>
-                    <TableCell className="border p-2">{devis.date || '-'}</TableCell>
-                    <TableCell className="border p-2">
-                      <div className="flex items-center justify-around">
-                        <Button onClick={() => unArchiveDevis(devis._id)}
-                          className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
-                          <ArchiveRestore className="mr-2 h-4 w-4" />
-                          Restorer
-                        </Button>
+              </TableHeader>
 
-                        <Button onClick={() => deleteDevis(devis._id)} className="bg-[#eb2f06] hover:bg-[#eb2f06]/90 text-sm">
-                          <Trash className="mr-2 h-4 w-4" />
-                          Supprimer
-                        </Button>
-                      </div>
+              <TableBody>
+                {devisArchives.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-4">
+                      Aucun devis archivé.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  devisArchives.map((devis) => (
+                    <TableRow key={devis._id}>
+                      <TableCell className="border p-2">
+                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
+                      </TableCell>
+                      <TableCell className="border p-2">
+                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
+                      </TableCell>
+                      <TableCell className="border p-2">
+                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
+                      </TableCell>
+                      <TableCell className="border p-2">
+                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
+                      </TableCell>
+                      <TableCell className="border p-2">
+                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
+                      </TableCell>
+                      <TableCell className="border p-2">{devis.date || '-'}</TableCell>
+                      <TableCell className="border p-2">
+                        <div className="flex items-center justify-around">
+                          <Button onClick={() => unArchiveDevis(devis._id)}
+                            className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
+                            <ArchiveRestore className="mr-2 h-4 w-4" />
+                            Restorer
+                          </Button>
+
+                          <Button onClick={() => deleteDevis(devis._id)} className="bg-[#eb2f06] hover:bg-[#eb2f06]/90 text-sm">
+                            <Trash className="mr-2 h-4 w-4" />
+                            Supprimer
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </TabsContent>
 
       </Tabs>
