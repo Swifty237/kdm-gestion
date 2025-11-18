@@ -80,7 +80,7 @@ const EstimateDetailsPage = () => {
         fetchDevis();
     }, [id]);
 
-    if (loading) return <p className="text-center">Chargement...</p>;
+    if (loading) return <p className="text-center w-full">Chargement...</p>;
     if (!devis) return <p>Devis introuvable.</p>;
 
     return (
