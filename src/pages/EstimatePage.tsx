@@ -4,6 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Archive, ArchiveRestore, ChevronLeft, ChevronRight, Trash } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import ConfirmDialog from "@/components/ConfirmDialog";
+
 
 interface Devis {
   _id: string;
@@ -25,6 +27,10 @@ const EstimatePage = () => {
 
   const [activeColumn, setActiveColumn] = useState(0);
   const tableHeads = ["Nom", "Service", "	Email", "Entreprise", "Téléphone", "Date"];
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedDevisId, setSelectedDevisId] = useState<string | null>(null);
+
 
   const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
 
@@ -185,7 +191,7 @@ const EstimatePage = () => {
                     <TableHead className="border p-2 text-left">Entreprise</TableHead>
                     <TableHead className="border p-2 text-left">Téléphone</TableHead>
                     <TableHead className="border p-2 text-left">Date</TableHead>
-                    <TableHead className="border p-2 text-center">Gestion</TableHead>
+                    <TableHead className="border p-2 text-left">Gestion</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -217,9 +223,27 @@ const EstimatePage = () => {
                         <TableCell className="border p-2">{devis.date || '-'}</TableCell>
 
                         <TableCell className="border p-2">
-                          <Button onClick={() => archiveDevis(devis._id)} className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
-                            <Archive className="h-4 w-4" />
-                          </Button>
+                          <div className="relative group">
+                            <Button
+                              type="button"
+                              onClick={() => archiveDevis(devis._id)}
+                              className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
+                            >
+                              <Archive className="h-6 w-6" />
+                            </Button>
+
+                            {/* Tooltip */}
+                            <span
+                              className=" absolute z-[55] left-1/2 -translate-x-1/2 -bottom-3
+                                          whitespace-nowrap
+                                          bg-black text-white text-xs px-2 py-1 rounded
+                                          opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-200
+                                        "
+                            >
+                              Archiver
+                            </span>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -275,9 +299,27 @@ const EstimatePage = () => {
                               </Link>
                             </TableCell>
                             <TableCell className="">
-                              <Button onClick={() => archiveDevis(row._id)} className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
-                                <Archive className="h-4 w-4" />
-                              </Button>
+                              <div className="relative group">
+                                <Button
+                                  type="button"
+                                  onClick={() => archiveDevis(row._id)}
+                                  className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
+                                >
+                                  <Archive className="h-6 w-6" />
+                                </Button>
+
+                                {/* Tooltip */}
+                                <span
+                                  className=" absolute z-[55] right-1/7 -translate-x-1/2 -bottom-4
+                                          whitespace-nowrap
+                                          bg-black text-white text-xs px-2 py-1 rounded
+                                          opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-200
+                                        "
+                                >
+                                  Archiver
+                                </span>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -307,7 +349,7 @@ const EstimatePage = () => {
                     <TableHead className="border p-2 text-left">Entreprise</TableHead>
                     <TableHead className="border p-2 text-left">Téléphone</TableHead>
                     <TableHead className="border p-2 text-left">Date</TableHead>
-                    <TableHead className="border p-2 text-center">Gestion</TableHead>
+                    <TableHead className="border p-2 text-left">Gestion</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -339,14 +381,52 @@ const EstimatePage = () => {
                         <TableCell className="border p-2">{devis.date || '-'}</TableCell>
                         <TableCell className="border p-2">
                           <div className="flex items-center justify-around">
-                            <Button onClick={() => unArchiveDevis(devis._id)}
-                              className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
-                              <ArchiveRestore className="h-4 w-4" />
-                            </Button>
+                            <div className="relative group">
+                              <Button
+                                type="button"
+                                onClick={() => unArchiveDevis(devis._id)}
+                                className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
+                              >
+                                <ArchiveRestore className="h-4 w-4" />
+                              </Button>
 
-                            <Button onClick={() => deleteDevis(devis._id)} className="bg-[#eb2f06] hover:bg-[#eb2f06]/90 text-sm">
-                              <Trash className="h-4 w-4" />
-                            </Button>
+                              {/* Tooltip */}
+                              <span
+                                className=" absolute z-[54] right-1/7 -translate-x-1/2 -bottom-4
+                                          whitespace-nowrap
+                                          bg-black text-white text-xs px-2 py-1 rounded
+                                          opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-200
+                                        "
+                              >
+                                Restorer
+                              </span>
+                            </div>
+
+                            <div className="relative group">
+                              <Button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedDevisId(devis._id);
+                                  setConfirmOpen(true);
+                                }}
+                                className="bg-red-400 hover:bg-red-600 text-sm lg:text-base"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+
+                              {/* Tooltip */}
+                              <span
+                                className=" absolute z-[55] right-1/7 -translate-x-1/2 -bottom-4
+                                          whitespace-nowrap
+                                          bg-black text-white text-xs px-2 py-1 rounded
+                                          opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-200
+                                        "
+                              >
+                                Supprimer
+                              </span>
+                            </div>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -406,14 +486,52 @@ const EstimatePage = () => {
                             </TableCell>
                             <TableCell className="">
                               <div className="flex items-center justify-around">
-                                <Button onClick={() => unArchiveDevis(row._id)}
-                                  className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
-                                  <ArchiveRestore className="h-4 w-4" />
-                                </Button>
+                                <div className="relative group">
+                                  <Button
+                                    type="button"
+                                    onClick={() => unArchiveDevis(row._id)}
+                                    className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
+                                  >
+                                    <ArchiveRestore className="h-4 w-4" />
+                                  </Button>
 
-                                <Button onClick={() => deleteDevis(row._id)} className="bg-[#eb2f06] hover:bg-[#eb2f06]/90 text-sm">
-                                  <Trash className="h-4 w-4" />
-                                </Button>
+                                  {/* Tooltip */}
+                                  <span
+                                    className=" absolute z-[54] right-1/7 -translate-x-1/2 -bottom-4
+                                          whitespace-nowrap
+                                          bg-black text-white text-xs px-2 py-1 rounded
+                                          opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-200
+                                        "
+                                  >
+                                    Restorer
+                                  </span>
+                                </div>
+
+                                <div className="relative group">
+                                  <Button
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedDevisId(row._id);
+                                      setConfirmOpen(true);
+                                    }}
+                                    className="bg-red-400 hover:bg-red-600 text-sm lg:text-base"
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+
+                                  {/* Tooltip */}
+                                  <span
+                                    className=" absolute z-[55] right-1/7 -translate-x-1/2 -bottom-4
+                                          whitespace-nowrap
+                                          bg-black text-white text-xs px-2 py-1 rounded
+                                          opacity-0 group-hover:opacity-100
+                                          transition-opacity duration-200
+                                        "
+                                  >
+                                    Supprimer
+                                  </span>
+                                </div>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -426,8 +544,23 @@ const EstimatePage = () => {
             </>
           )}
         </TabsContent>
-
       </Tabs>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Supprimer ce devis ?"
+        description="Voulez-vous vraiment supprimer ce devis ?"
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        onConfirm={() => {
+          if (selectedDevisId) {
+            deleteDevis(selectedDevisId);
+          }
+          setConfirmOpen(false);
+        }}
+        onCancel={() => setConfirmOpen(false)}
+      />
+
     </div>
   );
 };

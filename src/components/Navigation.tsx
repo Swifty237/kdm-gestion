@@ -53,8 +53,8 @@ const Navigation = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (navRef.current && !navRef.current.contains(event.target as Node)) {
-        setIsVisible(false);     // 🔥 cacher la navigation
-        setIsMenuOpen(false);    // 🔥 fermer le menu mobile si ouvert
+        setIsVisible(false);     // cacher la navigation
+        setIsMenuOpen(false);    // fermer le menu mobile si ouvert
       }
     };
 
@@ -73,13 +73,29 @@ const Navigation = () => {
       `}>
       <div className="w-[80%] flex justify-between flex-col">
         <div className="flex w-full justify-between mb-4">
-          <Button
-            type="button"
-            onClick={handleLogout}
-            className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
-          >
-            <LogOut className="h-6 w-6" />
-          </Button>
+          <div className="relative group">
+            <Button
+              type="button"
+              onClick={handleLogout}
+              className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
+            >
+              <LogOut className="h-6 w-6" />
+            </Button>
+
+            {/* Tooltip */}
+            <span
+              className=" absolute left-1/2 -translate-x-1/2 -bottom-10
+                          whitespace-nowrap
+                          bg-black text-white text-xs px-2 py-1 rounded
+                          opacity-0 group-hover:opacity-100
+                          transition-opacity duration-200
+                        "
+            >
+              Déconnexion
+            </span>
+          </div>
+
+
 
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
