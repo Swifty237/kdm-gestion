@@ -18,6 +18,7 @@ const Navigation = () => {
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userLogin');
+    localStorage.removeItem("estimate_active_tab");
     navigate('/');
   };
 
@@ -75,11 +76,9 @@ const Navigation = () => {
           <Button
             type="button"
             onClick={handleLogout}
-            className="bg-[#001964] hover:bg-[#001964]/90 text-sm lg:text-base"
-            size="lg"
+            className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
           >
-            <LogOut className="mr-2 h-6 w-6" />
-            <span>Déconnexion</span>
+            <LogOut className="h-6 w-6" />
           </Button>
 
           <button

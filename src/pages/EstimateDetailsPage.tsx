@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 interface Devis {
     _id: string;
@@ -38,6 +40,7 @@ const EstimateDetailsPage = () => {
     const { id } = useParams();
     const [devis, setDevis] = useState<Devis | null>(null);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     // Fonction utilitaire pour convertir stairsSize
     const formatStairsSize = (size: string) => {
@@ -82,6 +85,12 @@ const EstimateDetailsPage = () => {
 
     return (
         <div className="flex flex-col justify-center items-center min-h-screen p-4">
+
+            <div className="flex justify-end w-[80%]">
+                <Button onClick={() => navigate(-1)} className="bg-gray-400 hover:bg-gray-500">
+                    <X className="h-6 w-6" />
+                </Button>
+            </div>
 
             <h2 className="text-3xl font-bold text-[#001964] pt-8">
                 Détail de la demande de devis n° ----

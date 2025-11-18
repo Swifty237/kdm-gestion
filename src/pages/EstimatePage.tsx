@@ -13,17 +13,86 @@ interface Devis {
   telephone?: string;
   service: string;
   date?: string;
-  archived?: boolean;  // <-- IMPORTANT
+  archived?: boolean;
 }
 
 const EstimatePage = () => {
   const [devisList, setDevisList] = useState<Devis[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState(
+    localStorage.getItem("estimate_active_tab") || "nonTraites"
+  );
+
+
+  const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    localStorage.setItem("estimate_active_tab", value);
+  };
+
+
+  const archiveDevis = async (id: string) => {
+
+    try {
+      const response = await fetch(`${API_URL}/api/devis/${id}/archive`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.ok) {
+        // Mise à jour instantanée du state côté client
+        setDevisList(prev =>
+          prev.map(d => d._id === id ? { ...d, archived: true } : d)
+        );
+      } else {
+        console.error("Erreur lors de l'archivage");
+      }
+    } catch (err) {
+      console.error("Erreur réseau :", err);
+    }
+  };
+
+  const unArchiveDevis = async (id: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/devis/${id}/unarchive`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.ok) {
+        // Mise à jour immédiate dans le state React
+        setDevisList(prev =>
+          prev.map(d => d._id === id ? { ...d, archived: false } : d)
+        );
+      } else {
+        console.error("Erreur lors de la désarchivage");
+      }
+    } catch (err) {
+      console.error("Erreur réseau :", err);
+    }
+  };
+
+  const deleteDevis = async (id: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/devis/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setDevisList(prev => prev.filter(d => d._id !== id));
+      } else {
+        console.error("Erreur lors de la suppression");
+      }
+    } catch (err) {
+      console.error("Erreur réseau :", err);
+    }
+  };
+
 
   useEffect(() => {
     const fetchDevis = async () => {
       try {
-        const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
         const response = await fetch(`${API_URL}/api/devis`);
         const data = await response.json();
 
@@ -48,7 +117,7 @@ const EstimatePage = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen pt-16">
-      <Tabs defaultValue="nonTraites" className="w-[80%]">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-[80%]">
 
         {/* ONGLET SELECTEUR */}
         <TabsList className="mb-6 flex bg-[white] justify-around">
@@ -67,7 +136,7 @@ const EstimatePage = () => {
 
         {/* ONGLET 1 */}
         <TabsContent value="nonTraites">
-          <p className="text-xl my-8 font-bold">Demande de devis à traiter</p>
+          <p className="text-xl my-8 font-bold text-center">Demande de devis à traiter</p>
           {loading ? (
             <p>Chargement...</p>
           ) : (
@@ -75,10 +144,10 @@ const EstimatePage = () => {
               <TableHeader>
                 <TableRow className="bg-gray-100">
                   <TableHead className="border p-2 text-left">Nom</TableHead>
+                  <TableHead className="border p-2 text-left">Service</TableHead>
                   <TableHead className="border p-2 text-left">Email</TableHead>
                   <TableHead className="border p-2 text-left">Entreprise</TableHead>
                   <TableHead className="border p-2 text-left">Téléphone</TableHead>
-                  <TableHead className="border p-2 text-left">Service</TableHead>
                   <TableHead className="border p-2 text-left">Date</TableHead>
                   <TableHead className="border p-2 text-center">Gestion</TableHead>
                 </TableRow>
@@ -98,6 +167,9 @@ const EstimatePage = () => {
                         <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
                       </TableCell>
                       <TableCell className="border p-2">
+                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
+                      </TableCell>
+                      <TableCell className="border p-2">
                         <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
                       </TableCell>
                       <TableCell className="border p-2">
@@ -106,11 +178,10 @@ const EstimatePage = () => {
                       <TableCell className="border p-2">
                         <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
                       </TableCell>
-                      <TableCell className="border p-2">{devis.service}</TableCell>
                       <TableCell className="border p-2">{devis.date || '-'}</TableCell>
 
                       <TableCell className="border p-2 text-center">
-                        <Button className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
+                        <Button onClick={() => archiveDevis(devis._id)} className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
                           <Archive className="mr-2 h-4 w-4" />
                           Archiver
                         </Button>
@@ -125,16 +196,18 @@ const EstimatePage = () => {
 
         {/* ONGLET 2 */}
         <TabsContent value="archives">
-          <p className="text-xl my-8 font-bold">Devis archivés</p>
+          <p className="text-xl my-8 font-bold text-center">Devis archivés</p>
 
           <Table className="w-full border border-gray-300 shadow-lg">
             <TableHeader>
               <TableRow className="bg-gray-100">
                 <TableHead className="border p-2 text-left">Nom</TableHead>
-                <TableHead className="border p-2 text-left">Email</TableHead>
                 <TableHead className="border p-2 text-left">Service</TableHead>
+                <TableHead className="border p-2 text-left">Email</TableHead>
+                <TableHead className="border p-2 text-left">Entreprise</TableHead>
+                <TableHead className="border p-2 text-left">Téléphone</TableHead>
                 <TableHead className="border p-2 text-left">Date</TableHead>
-                <TableHead className="border p-2 text-left">Gestion</TableHead>
+                <TableHead className="border p-2 text-center">Gestion</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -148,18 +221,31 @@ const EstimatePage = () => {
               ) : (
                 devisArchives.map((devis) => (
                   <TableRow key={devis._id}>
-                    <TableCell className="border p-2">{devis.name}</TableCell>
-                    <TableCell className="border p-2">{devis.email}</TableCell>
-                    <TableCell className="border p-2">{devis.service}</TableCell>
+                    <TableCell className="border p-2">
+                      <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
+                    </TableCell>
+                    <TableCell className="border p-2">
+                      <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
+                    </TableCell>
+                    <TableCell className="border p-2">
+                      <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
+                    </TableCell>
+                    <TableCell className="border p-2">
+                      <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
+                    </TableCell>
+                    <TableCell className="border p-2">
+                      <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
+                    </TableCell>
                     <TableCell className="border p-2">{devis.date || '-'}</TableCell>
                     <TableCell className="border p-2">
                       <div className="flex items-center justify-around">
-                        <Button className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
+                        <Button onClick={() => unArchiveDevis(devis._id)}
+                          className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
                           <ArchiveRestore className="mr-2 h-4 w-4" />
                           Restorer
                         </Button>
 
-                        <Button className="bg-[#eb2f06] hover:bg-[#eb2f06]/90 text-sm">
+                        <Button onClick={() => deleteDevis(devis._id)} className="bg-[#eb2f06] hover:bg-[#eb2f06]/90 text-sm">
                           <Trash className="mr-2 h-4 w-4" />
                           Supprimer
                         </Button>
