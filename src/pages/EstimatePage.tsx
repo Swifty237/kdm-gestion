@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Archive, ArchiveRestore, Trash } from 'lucide-react';
+import { Archive, ArchiveRestore, ChevronLeft, ChevronRight, Trash } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface Devis {
@@ -23,6 +23,8 @@ const EstimatePage = () => {
     localStorage.getItem("estimate_active_tab") || "nonTraites"
   );
 
+  const [activeColumn, setActiveColumn] = useState(0);
+  const tableHeads = ["Nom", "Service", "	Email", "Entreprise", "Téléphone", "Date"];
 
   const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
 
@@ -102,6 +104,26 @@ const EstimatePage = () => {
     }
   };
 
+  const switchAttribut = (devis: Devis) => {
+
+    switch (activeColumn) {
+      case 0:
+        return devis.name;
+      case 1:
+        return devis.service;
+      case 2:
+        return devis.email;
+      case 3:
+        return devis.entreprise;
+      case 4:
+        return devis.telephone;
+      case 5:
+        return devis.date;
+      default:
+        return "-"; // si valeur inconnue
+    }
+  };
+
 
   useEffect(() => {
     const fetchDevis = async () => {
@@ -153,57 +175,118 @@ const EstimatePage = () => {
           {loading ? (
             <p className="text-center">Chargement...</p>
           ) : (
-            <Table className="w-full border border-gray-300 shadow-lg">
-              <TableHeader>
-                <TableRow className="bg-gray-100">
-                  <TableHead className="border p-2 text-left">Nom</TableHead>
-                  <TableHead className="border p-2 text-left">Service</TableHead>
-                  <TableHead className="border p-2 text-left">Email</TableHead>
-                  <TableHead className="border p-2 text-left">Entreprise</TableHead>
-                  <TableHead className="border p-2 text-left">Téléphone</TableHead>
-                  <TableHead className="border p-2 text-left">Date</TableHead>
-                  <TableHead className="border p-2 text-center">Gestion</TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {devisNonArchives.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-4">
-                      Aucun devis à traiter.
-                    </TableCell>
+            <>
+              <Table className="hidden lg:table w-full border border-gray-300 shadow-lg">
+                <TableHeader>
+                  <TableRow className="bg-gray-100">
+                    <TableHead className="border p-2 text-left">Nom</TableHead>
+                    <TableHead className="border p-2 text-left">Service</TableHead>
+                    <TableHead className="border p-2 text-left">Email</TableHead>
+                    <TableHead className="border p-2 text-left">Entreprise</TableHead>
+                    <TableHead className="border p-2 text-left">Téléphone</TableHead>
+                    <TableHead className="border p-2 text-left">Date</TableHead>
+                    <TableHead className="border p-2 text-center">Gestion</TableHead>
                   </TableRow>
-                ) : (
-                  devisNonArchives.map((devis) => (
-                    <TableRow key={devis._id}>
-                      <TableCell className="border p-2">
-                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
-                      </TableCell>
-                      <TableCell className="border p-2">
-                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
-                      </TableCell>
-                      <TableCell className="border p-2">
-                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
-                      </TableCell>
-                      <TableCell className="border p-2">
-                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
-                      </TableCell>
-                      <TableCell className="border p-2">
-                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
-                      </TableCell>
-                      <TableCell className="border p-2">{devis.date || '-'}</TableCell>
+                </TableHeader>
 
-                      <TableCell className="border p-2 text-center">
-                        <Button onClick={() => archiveDevis(devis._id)} className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
-                          <Archive className="mr-2 h-4 w-4" />
-                          Archiver
-                        </Button>
+                <TableBody>
+                  {devisNonArchives.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-4">
+                        Aucun devis à traiter.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    devisNonArchives.map((devis) => (
+                      <TableRow key={devis._id}>
+                        <TableCell className="border p-2">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
+                        </TableCell>
+                        <TableCell className="border p-2">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
+                        </TableCell>
+                        <TableCell className="border p-2">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
+                        </TableCell>
+                        <TableCell className="border p-2">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
+                        </TableCell>
+                        <TableCell className="border p-2">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
+                        </TableCell>
+                        <TableCell className="border p-2">{devis.date || '-'}</TableCell>
+
+                        <TableCell className="border p-2">
+                          <Button onClick={() => archiveDevis(devis._id)} className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
+                            <Archive className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+
+              <div className="lg:hidden">
+                {devisNonArchives.length !== 0 ? (
+                  <div className="flex items-center justify-center gap-4 my-4 lg:hidden">
+                    <Button
+                      className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
+                      onClick={() => setActiveColumn(prev => Math.max(0, prev - 1))}
+                    >
+                      <ChevronLeft />
+                    </Button>
+
+                    <span className="font-semibold">
+                      {tableHeads[activeColumn]}
+                    </span>
+
+                    <Button
+                      className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
+                      onClick={() => setActiveColumn(prev => Math.min(tableHeads.length - 1, prev + 1))}
+                    >
+                      <ChevronRight />
+                    </Button>
+                  </div>
+                ) : <></>}
+
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-100">
+                      <TableHead className="border">{tableHeads[activeColumn]}</TableHead>
+                      <TableHead className="border">Gestion</TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+                    {devisNonArchives.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={2} className="text-center py-4">
+                          Aucun devis à traiter.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      <>
+                        {devisNonArchives.map((row) => (
+                          <TableRow key={row._id}>
+                            <TableCell>
+                              <Link to={`/estimateDetails/${row._id}`} className="flex">
+                                {switchAttribut(row) ? switchAttribut(row) : "-"}
+                              </Link>
+                            </TableCell>
+                            <TableCell className="">
+                              <Button onClick={() => archiveDevis(row._id)} className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
+                                <Archive className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </TabsContent>
 
@@ -214,64 +297,133 @@ const EstimatePage = () => {
           {loading ? (
             <p className="text-center">Chargement...</p>
           ) : (
-            <Table className="w-full border border-gray-300 shadow-lg">
-              <TableHeader>
-                <TableRow className="bg-gray-100">
-                  <TableHead className="border p-2 text-left">Nom</TableHead>
-                  <TableHead className="border p-2 text-left">Service</TableHead>
-                  <TableHead className="border p-2 text-left">Email</TableHead>
-                  <TableHead className="border p-2 text-left">Entreprise</TableHead>
-                  <TableHead className="border p-2 text-left">Téléphone</TableHead>
-                  <TableHead className="border p-2 text-left">Date</TableHead>
-                  <TableHead className="border p-2 text-center">Gestion</TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {devisArchives.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-4">
-                      Aucun devis archivé.
-                    </TableCell>
+            <>
+              <Table className=" hidden lg:table w-full border border-gray-300 shadow-lg">
+                <TableHeader>
+                  <TableRow className="bg-gray-100">
+                    <TableHead className="border p-2 text-left">Nom</TableHead>
+                    <TableHead className="border p-2 text-left">Service</TableHead>
+                    <TableHead className="border p-2 text-left">Email</TableHead>
+                    <TableHead className="border p-2 text-left">Entreprise</TableHead>
+                    <TableHead className="border p-2 text-left">Téléphone</TableHead>
+                    <TableHead className="border p-2 text-left">Date</TableHead>
+                    <TableHead className="border p-2 text-center">Gestion</TableHead>
                   </TableRow>
-                ) : (
-                  devisArchives.map((devis) => (
-                    <TableRow key={devis._id}>
-                      <TableCell className="border p-2">
-                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
-                      </TableCell>
-                      <TableCell className="border p-2">
-                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
-                      </TableCell>
-                      <TableCell className="border p-2">
-                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
-                      </TableCell>
-                      <TableCell className="border p-2">
-                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
-                      </TableCell>
-                      <TableCell className="border p-2">
-                        <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
-                      </TableCell>
-                      <TableCell className="border p-2">{devis.date || '-'}</TableCell>
-                      <TableCell className="border p-2">
-                        <div className="flex items-center justify-around">
-                          <Button onClick={() => unArchiveDevis(devis._id)}
-                            className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
-                            <ArchiveRestore className="mr-2 h-4 w-4" />
-                            Restorer
-                          </Button>
+                </TableHeader>
 
-                          <Button onClick={() => deleteDevis(devis._id)} className="bg-[#eb2f06] hover:bg-[#eb2f06]/90 text-sm">
-                            <Trash className="mr-2 h-4 w-4" />
-                            Supprimer
-                          </Button>
-                        </div>
+                <TableBody>
+                  {devisArchives.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-4">
+                        Aucun devis archivé.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    devisArchives.map((devis) => (
+                      <TableRow key={devis._id}>
+                        <TableCell className="border p-2">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
+                        </TableCell>
+                        <TableCell className="border p-2">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
+                        </TableCell>
+                        <TableCell className="border p-2">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
+                        </TableCell>
+                        <TableCell className="border p-2">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
+                        </TableCell>
+                        <TableCell className="border p-2">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
+                        </TableCell>
+                        <TableCell className="border p-2">{devis.date || '-'}</TableCell>
+                        <TableCell className="border p-2">
+                          <div className="flex items-center justify-around">
+                            <Button onClick={() => unArchiveDevis(devis._id)}
+                              className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
+                              <ArchiveRestore className="h-4 w-4" />
+                            </Button>
+
+                            <Button onClick={() => deleteDevis(devis._id)} className="bg-[#eb2f06] hover:bg-[#eb2f06]/90 text-sm">
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+
+              <div className="lg:hidden">
+
+                {devisArchives.length !== 0 ? (
+                  <div className="flex items-center justify-center gap-4 my-4 lg:hidden">
+                    <Button
+                      className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
+                      onClick={() => setActiveColumn(prev => Math.max(0, prev - 1))}
+                    >
+                      <ChevronLeft />
+                    </Button>
+
+                    <span className="font-semibold">
+                      {tableHeads[activeColumn]}
+                    </span>
+
+                    <Button
+                      className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
+                      onClick={() => setActiveColumn(prev => Math.min(tableHeads.length - 1, prev + 1))}
+                    >
+                      <ChevronRight />
+                    </Button>
+                  </div>
+                ) : <></>}
+
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-100">
+                      <TableHead className="border">{tableHeads[activeColumn]}</TableHead>
+                      <TableHead className="border">Gestion</TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+
+                    {devisArchives.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={2} className="text-center py-4">
+                          Aucun devis archivé.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      <>
+                        {devisArchives.map((row) => (
+                          <TableRow key={row._id}>
+                            <TableCell>
+                              <Link to={`/estimateDetails/${row._id}`} className="flex">
+                                {switchAttribut(row) ? switchAttribut(row) : "-"}
+                              </Link>
+                            </TableCell>
+                            <TableCell className="">
+                              <div className="flex items-center justify-around">
+                                <Button onClick={() => unArchiveDevis(row._id)}
+                                  className="bg-[#001964] hover:bg-[#001964]/90 text-sm">
+                                  <ArchiveRestore className="h-4 w-4" />
+                                </Button>
+
+                                <Button onClick={() => deleteDevis(row._id)} className="bg-[#eb2f06] hover:bg-[#eb2f06]/90 text-sm">
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </TabsContent>
 
