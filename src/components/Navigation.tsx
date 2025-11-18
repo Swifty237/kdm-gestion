@@ -91,7 +91,7 @@ const Navigation = () => {
           {userLogin === "admin" ? (
             <>
               <div className="hidden lg:flex w-[80%] items-center justify-around">
-                <Link to="/administration" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-2xl ${location.pathname === "/administration"
+                <Link to="/administration" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/administration"
                   ? 'text-[#001964]'
                   : 'text-muted-foreground'
                   }`}
@@ -100,7 +100,7 @@ const Navigation = () => {
                   <span>Liste des gestionnaires</span>
                 </Link>
 
-                <Link to="/register" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-2xl ${location.pathname === "/register"
+                <Link to="/register" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/register"
                   ? 'text-[#001964]'
                   : 'text-muted-foreground'
                   }`}
@@ -113,7 +113,7 @@ const Navigation = () => {
           ) : (
             <>
               <div className="hidden lg:flex w-[80%] items-center justify-around">
-                <Link to="/estimate" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-2xl ${location.pathname === "/estimate"
+                <Link to="/estimate" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/estimate"
                   ? 'text-[#001964]'
                   : 'text-muted-foreground'
                   }`}
@@ -124,7 +124,7 @@ const Navigation = () => {
 
                 <Link
                   to="/passwordModif"
-                  className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-2xl ${location.pathname === "/passwordModif"
+                  className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/passwordModif"
                     ? 'text-[#001964]'
                     : 'text-muted-foreground'
                     }`}
@@ -143,7 +143,7 @@ const Navigation = () => {
             {isMenuOpen && (
               <div className="lg:hidden border-t border-border backdrop-blur-sm">
                 <div className="px-2 pt-2 pb-3 space-y-1">
-                  <Link to="/administration" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-2xl ${location.pathname === "/administration"
+                  <Link to="/administration" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/administration"
                     ? 'text-[#001964]'
                     : 'text-muted-foreground'
                     }`}
@@ -152,7 +152,7 @@ const Navigation = () => {
                     Liste des gestionnaires
                   </Link>
 
-                  <Link to="/register" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-2xl ${location.pathname === "/register"
+                  <Link to="/register" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/register"
                     ? 'text-[#001964]'
                     : 'text-muted-foreground'
                     }`}
@@ -170,7 +170,7 @@ const Navigation = () => {
             {isMenuOpen && (
               <div className="lg:hidden border-t border-border backdrop-blur-sm">
                 <div className="px-2 pt-2 pb-3 space-y-1">
-                  <Link to="/estimate" className={`flex items-center my-6 font-bold transition-colors duration-200 hover:text-[#001964] text-2xl ${location.pathname === "/estimate"
+                  <Link to="/estimate" className={`flex items-center my-6 font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/estimate"
                     ? 'text-[#001964]'
                     : 'text-muted-foreground'
                     }`}
@@ -181,7 +181,7 @@ const Navigation = () => {
 
                   <Link
                     to="/passwordModif"
-                    className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-2xl ${location.pathname === "/passwordModif"
+                    className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/passwordModif"
                       ? 'text-[#001964]'
                       : 'text-muted-foreground'
                       }`}
