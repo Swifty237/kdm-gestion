@@ -195,13 +195,6 @@ const PasswordModifPage = () => {
                                         </>
                                     )}
                                 </Button>
-
-                                {/* <p className="mt-4 text-center">
-                                    Déjà un compte ?{" "}
-                                    <Link to="/" className="text-[#001964] underline font-semibold">
-                                        Se connecter
-                                    </Link>
-                                </p> */}
                             </form>
                         </div>
 

@@ -40,7 +40,7 @@ const AdministrationPage = () => {
 
             <div className="mt-8 w-[80%] shadow-lg">
                 {loading ? (
-                    <p>Chargement des gestionnaires...</p>
+                    <p className="text-center">Chargement des gestionnaires...</p>
                 ) : users.length === 0 ? (
                     <p>Aucun gestionnaire trouvé.</p>
                 ) : (
