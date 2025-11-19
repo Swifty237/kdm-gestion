@@ -15,9 +15,9 @@ const Layout = ({ children }: LayoutProps) => {
   const shouldHideNav = hideNavRoutes.includes(location.pathname);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col">
       {!shouldHideNav && <Navigation />}  {/* ← caché si on est sur / */}
-      <main className="flex-1">
+      <main className="min-h-screen flex-1">
         {children}
       </main>
     </div>
