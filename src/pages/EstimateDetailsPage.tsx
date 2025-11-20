@@ -11,6 +11,10 @@ interface Devis {
     entreprise?: string;
     telephone?: string;
     service: string;
+    offer: string;
+    billingAddress: string;
+    devisNumber: string;
+    message: string;
     date?: string;
     departure: {
         surface: string;
@@ -56,6 +60,22 @@ const EstimateDetailsPage = () => {
         }
     };
 
+    // Fonction utilitaire pour convertir stairsSize
+    const formatOffers = (offer: string) => {
+        switch (offer) {
+            case "economique":
+                return "Économique";
+            case "standard":
+                return "Standard";
+            case "premium":
+                return "Premium";
+            case "premium+":
+                return "Premium +";
+            default:
+                return "-"; // si valeur inconnue
+        }
+    };
+
     const formatFloor = (floor: string | number | undefined) => {
         if (!floor || floor === "0" || floor === 0) return "Rez de chaussée";
         return floor;
@@ -93,7 +113,7 @@ const EstimateDetailsPage = () => {
             </div>
 
             <h2 className="text-3xl font-bold text-[#001964] pt-8">
-                Détail de la demande de devis n° ----
+                Détail de la demande de devis n° {devis.devisNumber}
             </h2>
 
             <p className="text-xl font-bold">
@@ -113,36 +133,49 @@ const EstimateDetailsPage = () => {
                             <div className="space-y-4 lg:space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Nom complet : </p>
+                                        <p className="text-lg font-bold me-8">Nom complet :</p>
                                         <span>{devis.name}</span>
                                     </div>
 
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Email</p>
+                                        <p className="text-lg font-bold me-8">Email :</p>
                                         <span>{devis.email}</span>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Entreprise </p>
+                                        <p className="text-lg font-bold me-8">Entreprise :</p>
                                         <span>{devis.entreprise || "-"}</span>
                                     </div>
+
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Téléphone</p>
-                                        <span>{devis.telephone || "-"}</span>
+                                        <p className="text-lg font-bold me-8">Adresse de facturation :</p>
+                                        <span>{devis.billingAddress}</span>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Service : </p>
-                                        <span>{devis.service}</span>
+                                        <p className="text-lg font-bold me-8">Téléphone :</p>
+                                        <span>{devis.telephone || "-"}</span>
                                     </div>
 
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Date</p>
+                                        <p className="text-lg font-bold me-8">Service : </p>
+                                        <span>{devis.service}</span>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                    <div className="flex items-center h-12">
+                                        <p className="text-lg font-bold me-8">Date :</p>
                                         <span>{devis.date || "-"}</span>
+                                    </div>
+
+                                    <div className="flex items-center h-12">
+                                        <p className="text-lg font-bold me-8">Formule :</p>
+                                        <span>{formatOffers(devis.offer)}</span>
                                     </div>
                                 </div>
 
@@ -171,7 +204,7 @@ const EstimateDetailsPage = () => {
                                     </div>
 
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Numéro d'étage</p>
+                                        <p className="text-lg font-bold me-8">Numéro d'étage :</p>
                                         <span>{formatFloor(devis.departure.floor)}</span>
                                     </div>
                                 </div>
@@ -183,7 +216,7 @@ const EstimateDetailsPage = () => {
                                     </div>
 
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Taille de l'ascenceur</p>
+                                        <p className="text-lg font-bold me-8">Taille de l'ascenceur :</p>
                                         <span>{devis.departure.elevatorSize || "-"}</span>
                                     </div>
                                 </div>
@@ -195,7 +228,7 @@ const EstimateDetailsPage = () => {
                                     </div>
 
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Adresse</p>
+                                        <p className="text-lg font-bold me-8">Adresse :</p>
                                         <span>{devis.departure.address}</span>
                                     </div>
                                 </div>
@@ -208,7 +241,7 @@ const EstimateDetailsPage = () => {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Numéro d'étage</p>
+                                        <p className="text-lg font-bold me-8">Numéro d'étage :</p>
                                         <span>{formatFloor(devis.arrival.floor)}</span>
                                     </div>
 
@@ -221,7 +254,7 @@ const EstimateDetailsPage = () => {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Taille de l'ascenceur</p>
+                                        <p className="text-lg font-bold me-8">Taille de l'ascenceur :</p>
                                         <span>{devis.arrival.elevatorSize || "-"}</span>
                                     </div>
 
@@ -233,12 +266,12 @@ const EstimateDetailsPage = () => {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Adresse</p>
+                                        <p className="text-lg font-bold me-8">Adresse :</p>
                                         <span>{devis.arrival.address}</span>
                                     </div>
 
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Nom du contact à l'arrivée</p>
+                                        <p className="text-lg font-bold me-8">Nom du contact à l'arrivée :</p>
                                         <span>{devis.arrival.contactName || "-"}</span>
                                     </div>
                                 </div>
@@ -250,9 +283,23 @@ const EstimateDetailsPage = () => {
                                     </div>
 
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Date</p>
+                                        <p className="text-lg font-bold me-8">Date :</p>
                                         <span>{devis.arrival.date || "-"}</span>
                                     </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 h-2"></div>
+
+                                <div className="grid grid-cols-1 gap-3 lg:gap-4 border-b-2">
+                                    <h4 className="text-xl font-bold">Informations supplémentaires</h4>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-3 lg:gap-4">
+                                    <div className="flex items-center h-12">
+                                        <span>{devis.message || "-"}</span>
+                                    </div>
+
+
                                 </div>
                             </div>
                         </CardContent>
