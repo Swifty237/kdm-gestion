@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
@@ -15,6 +15,8 @@ interface Devis {
     billingAddress: string;
     devisNumber: string;
     message: string;
+    estimatedAmount: string;
+    finalAmount: string;
     date?: string;
     departure: {
         surface: string;
@@ -123,183 +125,217 @@ const EstimateDetailsPage = () => {
             <div className="w-[80%] mx-auto">
                 <section className="py-8 lg:py-16 px-4 sm:px-8 lg:px-16">
                     <Card className="shadow-lg">
-                        <CardHeader>
+                        {/* <CardHeader>
                             <CardTitle className="text-xl lg:text-2xl text-[#001964]">Demande de devis</CardTitle>
                             <CardDescription className="text-lg italic">
                                 --
                             </CardDescription>
-                        </CardHeader>
+                        </CardHeader> */}
                         <CardContent>
                             <div className="space-y-4 lg:space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Nom complet :</p>
-                                        <span>{devis.name}</span>
+                                <div className="px-8">
+                                    <div className="grid grid-cols-1 gap-3 lg:gap-4 border-b-2 mt-4">
+                                        <h4 className="text-xl font-bold text-[#001964]">Informations client</h4>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Nom complet :</p>
+                                            <span>{devis.name}</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Email :</p>
+                                            <span>{devis.email}</span>
+                                        </div>
                                     </div>
 
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Email :</p>
-                                        <span>{devis.email}</span>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Entreprise :</p>
+                                            <span>{devis.entreprise || "-"}</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Adresse de facturation :</p>
+                                            <span>{devis.billingAddress}</span>
+                                        </div>
                                     </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Téléphone :</p>
+                                            <span>{devis.telephone || "-"}</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Service : </p>
+                                            <span>{devis.service}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Date :</p>
+                                            <span>{devis.date || "-"}</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Formule :</p>
+                                            <span>{formatOffers(devis.offer)}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 h-2"></div>
+
+                                    <div className="grid grid-cols-1 gap-3 lg:gap-4 border-b-2 mt-4">
+                                        <h4 className="text-xl font-bold text-[#001964]">Informations au départ</h4>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Surface : </p>
+                                            <span>{devis.departure.surface} m2</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Volume : </p>
+                                            <span>{devis.departure.volume || ""} m3</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Nombre de pièces : </p>
+                                            <span>{devis.departure.rooms}</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Numéro d'étage :</p>
+                                            <span>{formatFloor(devis.departure.floor)}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Ascenceur : </p>
+                                            <span>{devis.departure.elevator ? "Oui" : "Non"}</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Taille de l'ascenceur :</p>
+                                            <span>{devis.departure.elevatorSize || ""} personnes</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Taille de l'escalier : </p>
+                                            <span>{formatStairsSize(devis.departure.stairsSize)}</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Adresse :</p>
+                                            <span>{devis.departure.address}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 h-2"></div>
+
+                                    <div className="grid grid-cols-1 gap-3 lg:gap-4 border-b-2 mt-4">
+                                        <h4 className="text-xl font-bold text-[#001964]">Informations à l'arrivée</h4>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Numéro d'étage :</p>
+                                            <span>{formatFloor(devis.arrival.floor)}</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Ascenceur : </p>
+                                            <span>{devis.arrival.elevator ? "Oui" : "Non"}</span>
+                                        </div>
+
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Taille de l'ascenceur :</p>
+                                            <span>{devis.arrival.elevatorSize || ""} personnes</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Taille de l'escalier : </p>
+                                            <span>{formatStairsSize(devis.arrival.stairsSize)}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Adresse :</p>
+                                            <span>{devis.arrival.address}</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Nom du contact à l'arrivée :</p>
+                                            <span>{devis.arrival.contactName || "-"}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Entreprise : </p>
+                                            <span>{devis.arrival.entreprise || "-"}</span>
+                                        </div>
+
+                                        <div className="flex items-center h-12">
+                                            <p className="text-lg font-bold me-8">Date :</p>
+                                            <span>{devis.arrival.date || "-"}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 h-2"></div>
+
+                                    <div className="grid grid-cols-1 gap-3 lg:gap-4 border-b-2 mt-4">
+                                        <h4 className="text-xl font-bold text-[#001964]">Informations supplémentaires</h4>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-3 lg:gap-4">
+                                        <div className="flex items-center h-12">
+                                            <span>{devis.message || "-"}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-3 lg:gap-4 border-b-2 border-[#001964]">
+                                    <h4 className="text-2xl font-bold text-[#001964]">Facturation supplémentaire</h4>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Entreprise :</p>
-                                        <span>{devis.entreprise || "-"}</span>
+                                        <p className="text-lg font-bold me-8 text-[#001964]">Motif : </p>
+                                        <span className="text-[#001964]"></span>
                                     </div>
 
                                     <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Adresse de facturation :</p>
-                                        <span>{devis.billingAddress}</span>
+                                        <p className="text-lg font-bold me-8 text-[#001964]">Montant du supplément :</p>
+                                        <span className="text-[#001964]"></span>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Téléphone :</p>
-                                        <span>{devis.telephone || "-"}</span>
+                                    <div className="flex items-center h-12 text-3xl font-bold text-[#001964]">
+                                        <p className="me-8">Montant du devis :</p>
+                                        <span>{devis.estimatedAmount || ""} €</span>
                                     </div>
-
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Service : </p>
-                                        <span>{devis.service}</span>
+                                    <div className="flex items-center h-12 justify-end">
+                                        <Button className="text-lg me-4" variant="outline">
+                                            Modifier
+                                        </Button>
+                                        <Button className="text-lg" variant="destructive">
+                                            valider
+                                        </Button>
                                     </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Date :</p>
-                                        <span>{devis.date || "-"}</span>
-                                    </div>
-
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Formule :</p>
-                                        <span>{formatOffers(devis.offer)}</span>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 h-2"></div>
-
-                                <div className="grid grid-cols-1 gap-3 lg:gap-4 border-b-2 ">
-                                    <h4 className="text-xl font-bold">Informations au départ</h4>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Surface : </p>
-                                        <span>{devis.departure.surface}</span>
-                                    </div>
-
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Volume : </p>
-                                        <span>{devis.departure.volume || "-"}</span>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Nombre de pièces : </p>
-                                        <span>{devis.departure.rooms}</span>
-                                    </div>
-
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Numéro d'étage :</p>
-                                        <span>{formatFloor(devis.departure.floor)}</span>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Ascenceur : </p>
-                                        <span>{devis.departure.elevator ? "Oui" : "Non"}</span>
-                                    </div>
-
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Taille de l'ascenceur :</p>
-                                        <span>{devis.departure.elevatorSize || "-"}</span>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Taille de l'escalier : </p>
-                                        <span>{formatStairsSize(devis.departure.stairsSize)}</span>
-                                    </div>
-
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Adresse :</p>
-                                        <span>{devis.departure.address}</span>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 h-2"></div>
-
-                                <div className="grid grid-cols-1 gap-3 lg:gap-4 border-b-2">
-                                    <h4 className="text-xl font-bold">Informations à l'arrivée</h4>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Numéro d'étage :</p>
-                                        <span>{formatFloor(devis.arrival.floor)}</span>
-                                    </div>
-
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Ascenceur : </p>
-                                        <span>{devis.arrival.elevator ? "Oui" : "Non"}</span>
-                                    </div>
-
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Taille de l'ascenceur :</p>
-                                        <span>{devis.arrival.elevatorSize || "-"}</span>
-                                    </div>
-
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Taille de l'escalier : </p>
-                                        <span>{formatStairsSize(devis.arrival.stairsSize)}</span>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Adresse :</p>
-                                        <span>{devis.arrival.address}</span>
-                                    </div>
-
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Nom du contact à l'arrivée :</p>
-                                        <span>{devis.arrival.contactName || "-"}</span>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Entreprise : </p>
-                                        <span>{devis.arrival.entreprise || "-"}</span>
-                                    </div>
-
-                                    <div className="flex items-center h-12">
-                                        <p className="text-lg font-bold me-8">Date :</p>
-                                        <span>{devis.arrival.date || "-"}</span>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 h-2"></div>
-
-                                <div className="grid grid-cols-1 gap-3 lg:gap-4 border-b-2">
-                                    <h4 className="text-xl font-bold">Informations supplémentaires</h4>
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-3 lg:gap-4">
-                                    <div className="flex items-center h-12">
-                                        <span>{devis.message || "-"}</span>
-                                    </div>
-
-
                                 </div>
                             </div>
                         </CardContent>
