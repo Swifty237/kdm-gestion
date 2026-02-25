@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Archive, ArchiveRestore, ChevronLeft, ChevronRight, Trash } from 'lucide-react';
+import { Archive, ArchiveRestore, ChevronLeft, ChevronRight, Trash, Play } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
@@ -16,11 +16,13 @@ interface Devis {
   service: string;
   date?: string;
   archived?: boolean;
+  inManagement?: boolean; // Ajout de cette propriété
 }
 
 const EstimatePage = () => {
   const [devisList, setDevisList] = useState<Devis[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingManageId, setLoadingManageId] = useState<string | null>(null); // Pour gérer l'état de chargement du bouton
   const [activeTab, setActiveTab] = useState(
     localStorage.getItem("estimate_active_tab") || "nonTraites"
   );
@@ -44,6 +46,19 @@ const EstimatePage = () => {
     setLoading(true)
 
     try {
+
+      // D'abord, désactiver la gestion si le devis est en cours de gestion
+      const devis = devisList.find(d => d._id === id);
+
+      if (devis?.inManagement) {
+        // Appel API pour désactiver la gestion
+        await fetch(`${API_URL}/api/devis/${id}/manage`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inManagement: false })
+        });
+      }
+
       const response = await fetch(`${API_URL}/api/devis/${id}/archive`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -130,6 +145,32 @@ const EstimatePage = () => {
     }
   };
 
+  const manageDevis = async (id: string) => {
+    setLoadingManageId(id);
+
+    try {
+
+      const response = await fetch(`${API_URL}/api/devis/${id}/manage`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}) // ✅ IMPORTANT: Envoyer un objet vide
+      });
+
+      if (response.ok) {
+        // const data = await response.json();
+        setDevisList(prev =>
+          prev.map(d => d._id === id ? { ...d, inManagement: true } : d)
+        );
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Erreur lors de l'activation de la gestion:", errorData);
+      }
+    } catch (err) {
+      console.error("Erreur réseau :", err);
+    } finally {
+      setLoadingManageId(null);
+    }
+  };
 
   useEffect(() => {
     const fetchDevis = async () => {
@@ -223,26 +264,55 @@ const EstimatePage = () => {
                         <TableCell className="border p-2">{devis.date || '-'}</TableCell>
 
                         <TableCell className="border p-2">
-                          <div className="relative group">
-                            <Button
-                              type="button"
-                              onClick={() => archiveDevis(devis._id)}
-                              className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
-                            >
-                              <Archive className="h-6 w-6" />
-                            </Button>
+                          <div className="flex justify-around">
+                            <div className="relative group">
+                              <Button
+                                type="button"
+                                onClick={() => archiveDevis(devis._id)}
+                                className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
+                              >
+                                <Archive className="h-6 w-6" />
+                              </Button>
 
-                            {/* Tooltip */}
-                            <span
-                              className=" absolute z-[55] left-1/2 -translate-x-1/2 -bottom-3
+                              {/* Tooltip */}
+                              <span
+                                className=" absolute z-[55] left-1/2 -translate-x-1/2 -bottom-3
                                           whitespace-nowrap
                                           bg-black text-white text-xs px-2 py-1 rounded
                                           opacity-0 group-hover:opacity-100
                                           transition-opacity duration-200
                                         "
-                            >
-                              Archiver
-                            </span>
+                              >
+                                Archiver
+                              </span>
+                            </div>
+
+                            {devis.inManagement ? (
+                              <span className="bg-green-100 text-green-800 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                                En cours...
+                              </span>
+                            ) : (
+                              <div className="relative group">
+                                <Button
+                                  type="button"
+                                  onClick={() => manageDevis(devis._id)}
+                                  disabled={loadingManageId === devis._id}
+                                  className="bg-[#16a085] hover:bg-[#1abc9c] text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {loadingManageId === devis._id ? (
+                                    <span className="flex items-center gap-2">
+                                      <span className="animate-spin">⚪</span>
+                                      Chargement...
+                                    </span>
+                                  ) : (
+                                    <Play className="h-6 w-6" />
+                                  )}
+                                </Button>
+                                <span className="absolute z-[55] left-1/2 -translate-x-1/2 -bottom-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                  Activer la gestion
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -299,26 +369,43 @@ const EstimatePage = () => {
                               </Link>
                             </TableCell>
                             <TableCell className="">
-                              <div className="relative group">
-                                <Button
-                                  type="button"
-                                  onClick={() => archiveDevis(row._id)}
-                                  className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
-                                >
-                                  <Archive className="h-6 w-6" />
-                                </Button>
+                              <div className="flex items-center gap-2">
+                                <div className="relative group">
+                                  <Button
+                                    type="button"
+                                    onClick={() => archiveDevis(row._id)}
+                                    className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
+                                  >
+                                    <Archive className="h-6 w-6" />
+                                  </Button>
+                                  <span className="absolute z-[55] right-1/7 -translate-x-1/2 -bottom-4 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                    Archiver
+                                  </span>
+                                </div>
 
-                                {/* Tooltip */}
-                                <span
-                                  className=" absolute z-[55] right-1/7 -translate-x-1/2 -bottom-4
-                                          whitespace-nowrap
-                                          bg-black text-white text-xs px-2 py-1 rounded
-                                          opacity-0 group-hover:opacity-100
-                                          transition-opacity duration-200
-                                        "
-                                >
-                                  Archiver
-                                </span>
+                                {row.inManagement ? (
+                                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-medium">
+                                    En cours...
+                                  </span>
+                                ) : (
+                                  <div className="relative group">
+                                    <Button
+                                      type="button"
+                                      onClick={() => manageDevis(row._id)}
+                                      disabled={loadingManageId === row._id}
+                                      className="bg-[#16a085] hover:bg-[#1abc9c] text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                      {loadingManageId === row._id ? (
+                                        <span className="animate-spin">⚪</span>
+                                      ) : (
+                                        <Play className="h-6 w-6" />
+                                      )}
+                                    </Button>
+                                    <span className="absolute z-[55] right-1/7 -translate-x-1/2 -bottom-4 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                      Activer la gestion
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>
