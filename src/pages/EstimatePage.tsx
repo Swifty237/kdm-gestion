@@ -48,16 +48,16 @@ const EstimatePage = () => {
     try {
 
       // D'abord, désactiver la gestion si le devis est en cours de gestion
-      const devis = devisList.find(d => d._id === id);
+      // const devis = devisList.find(d => d._id === id);
 
-      if (devis?.inManagement) {
-        // Appel API pour désactiver la gestion
-        await fetch(`${API_URL}/api/devis/${id}/manage`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inManagement: false })
-        });
-      }
+      // if (devis?.inManagement) {
+      //   // Appel API pour désactiver la gestion
+      //   await fetch(`${API_URL}/api/devis/${id}/manage`, {
+      //     method: "PATCH",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify({ inManagement: false })
+      //   });
+      // }
 
       const response = await fetch(`${API_URL}/api/devis/${id}/archive`, {
         method: "PATCH",
