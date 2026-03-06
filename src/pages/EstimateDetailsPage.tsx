@@ -7,6 +7,7 @@ import AdjustmentModal from '@/components/AdjustmentModal';
 
 interface Devis {
     _id: string;
+    civility: string;
     name: string;
     email: string;
     entreprise?: string;
@@ -41,6 +42,7 @@ interface Devis {
         elevatorSize: string;
         stairsSize: string;
         address: string;
+        contactCivility: string;
         contactName: string;
         entreprise: string;
         date: string;
@@ -70,6 +72,7 @@ const EstimateDetailsPage = () => {
     };
 
     // Fonction pour confirmer la suppression
+    // Fonction pour confirmer la suppression
     const confirmDelete = async () => {
         if (!devis) return;
 
@@ -83,32 +86,37 @@ const EstimateDetailsPage = () => {
                 headers: { "Content-Type": "application/json" }
             });
 
+            const result = await response.json();
+
             if (response.ok) {
-                // Mettre à jour le state local
+                // Option 1: Mettre à jour avec les données retournées par le serveur
+                if (result.devis) {
+                    setDevis(result.devis);
+                } else {
+                    // Option 2: Mettre à jour manuellement (fallback)
+                    setDevis(prev => {
+                        if (!prev) return null;
+                        return {
+                            ...prev,
+                            finalAmount: '',
+                            adjustmentReason: '',
+                            adjustmentAmount: ''
+                        };
+                    });
+                }
+
+                // Réinitialiser les états locaux
                 setShowAdjustment(false);
                 setAdjustmentReason('');
                 setAdjustmentAmount('');
-
-                // Mettre à jour le devis dans le state
-                setDevis(prev => {
-                    if (!prev) return null;
-                    return {
-                        ...prev,
-                        finalAmount: '',
-                        adjustmentReason: '',
-                        adjustmentAmount: ''
-                    };
-                });
-
-                // Fermer le modal de confirmation
                 setShowDeleteConfirm(false);
 
-                // Optionnel: Afficher un message de succès
+                // Message de succès (optionnel)
                 // toast.success("Ajustement supprimé avec succès");
+
             } else {
-                const error = await response.json();
-                console.error("Erreur lors de la suppression:", error);
-                alert("Une erreur est survenue lors de la suppression de l'ajustement.");
+                console.error("Erreur lors de la suppression:", result.error);
+                alert(result.error || "Une erreur est survenue lors de la suppression de l'ajustement.");
             }
         } catch (err) {
             console.error("Erreur réseau:", err);
@@ -220,8 +228,24 @@ const EstimateDetailsPage = () => {
                 const res = await fetch(`${API_URL}/api/devis/${id}`);
                 const data = await res.json();
 
-                if (res.ok) setDevis(data);
-                else console.error("Erreur :", data);
+                if (res.ok) {
+                    setDevis(data);  // 1. On met d'abord à jour devis
+
+                    // 2. On utilise DATA (pas devis) pour les valeurs
+                    console.log(data.adjustmentReason);
+                    if (data.adjustmentReason && data.adjustmentReason !== "") {
+                        setAdjustmentReason(data.adjustmentReason);
+                    }
+
+                    console.log(data.adjustmentAmount);
+                    if (data.adjustmentAmount && data.adjustmentAmount !== "") {
+                        setAdjustmentAmount(data.adjustmentAmount);
+                        setShowAdjustment(true);
+                    }
+                } else {
+                    console.error("Erreur :", data);
+                }
+
             } catch (err) {
                 console.error(err);
             } finally {
@@ -269,8 +293,8 @@ const EstimateDetailsPage = () => {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                         <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Nom complet :</p>
-                                            <span>{devis.name}</span>
+                                            <p className="text-lg font-bold me-8">Civilité et nom :</p>
+                                            <span>{devis.civility} {devis.name}</span>
                                         </div>
 
                                         <div className="flex items-center h-12">
@@ -327,10 +351,12 @@ const EstimateDetailsPage = () => {
                                             <span>{devis.departure.surface} m2</span>
                                         </div>
 
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Volume : </p>
-                                            <span>{devis.departure.volume || ""} m3</span>
-                                        </div>
+                                        {devis.service == "transport" && (
+                                            <div className="flex items-center h-12">
+                                                <p className="text-lg font-bold me-8">Volume : </p>
+                                                <span>{devis.departure.volume || ""} m3</span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
@@ -406,10 +432,12 @@ const EstimateDetailsPage = () => {
                                             <span>{devis.arrival.address}</span>
                                         </div>
 
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Nom du contact à l'arrivée :</p>
-                                            <span>{devis.arrival.contactName || "-"}</span>
-                                        </div>
+                                        {devis.service == "transport" && (
+                                            <div className="flex items-center h-12">
+                                                <p className="text-lg font-bold me-8">Civilité et nom du contact :</p>
+                                                <span>{devis.arrival.contactCivility} {devis.arrival.contactName || "-"}</span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
@@ -417,11 +445,12 @@ const EstimateDetailsPage = () => {
                                             <p className="text-lg font-bold me-8">Entreprise : </p>
                                             <span>{devis.arrival.entreprise || "-"}</span>
                                         </div>
-
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Date :</p>
-                                            <span>{devis.arrival.date || "-"}</span>
-                                        </div>
+                                        {devis.service == "transport" && (
+                                            <div className="flex items-center h-12">
+                                                <p className="text-lg font-bold me-8">Date :</p>
+                                                <span>{devis.arrival.date || "-"}</span>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-1 h-2"></div>
@@ -431,14 +460,14 @@ const EstimateDetailsPage = () => {
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
+                                        <div className="flex items-center">
                                             <span>{devis.message || "-"}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* SECTION AJUSTEMENT - Conditionnellement affichée */}
-                                {(showAdjustment || devis.adjustmentAmount) && (
+                                {(showAdjustment || devis.adjustmentAmount !== "") && (
                                     <>
                                         <div className="grid grid-cols-1 gap-3 lg:gap-4 border border-[#001964]">
                                             <h4 className="text-3xl font-bold text-[#001964] text-center">Ajustement du montant du devis</h4>
@@ -447,12 +476,12 @@ const EstimateDetailsPage = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 h-12">
                                             <div className="flex items-center h-2">
                                                 <p className="text-lg font-bold me-8 text-[#001964]">Motif : </p>
-                                                <span className="text-[#001964]">{devis.adjustmentReason ? devis.adjustmentReason : adjustmentReason}</span>
+                                                <span className="text-[#001964]">{(devis.adjustmentReason && devis.adjustmentReason !== "") ? devis.adjustmentReason : adjustmentReason}</span>
                                             </div>
 
                                             <div className="flex items-center h-2">
                                                 <p className="text-lg font-bold me-8 text-[#001964]">Montant du supplément :</p>
-                                                <span className="text-[#001964]">{devis.adjustmentAmount ? devis.adjustmentAmount : adjustmentAmount} €</span>
+                                                <span className="text-[#001964]">{(devis.adjustmentAmount && devis.adjustmentAmount !== "") ? devis.adjustmentAmount : adjustmentAmount} €</span>
                                             </div>
                                         </div>
                                     </>
@@ -472,10 +501,10 @@ const EstimateDetailsPage = () => {
                                         </div>
                                         <div className="flex items-center h-12 text-2xl font-bold text-[#001964]">
                                             <p className="me-8">Montant estimé du devis :</p>
-                                            {devis.finalAmount ? (
+                                            {devis.finalAmount !== "" ? (
                                                 <span>{devis.finalAmount} €</span>
                                             ) : (
-                                                <span>{(Number(devis.estimatedAmount) + Number(adjustmentAmount)).toFixed(2) || ""} €</span>
+                                                <span>{(Number(devis.estimatedAmount) + Number(adjustmentAmount)).toFixed(2) || 0} €</span>
                                             )}
                                         </div>
                                     </div>

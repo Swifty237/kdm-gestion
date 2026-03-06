@@ -9,6 +9,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 
 interface Devis {
   _id: string;
+  civility: string;
   name: string;
   email: string;
   entreprise?: string;
@@ -191,6 +192,7 @@ const EstimatePage = () => {
     };
 
     fetchDevis();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Séparation des devis
@@ -226,7 +228,7 @@ const EstimatePage = () => {
               <Table className="hidden lg:table w-full border border-gray-300 shadow-lg">
                 <TableHeader>
                   <TableRow className="bg-gray-100">
-                    <TableHead className="border p-2 text-left">Nom</TableHead>
+                    <TableHead className="border p-2 text-left">Civilité et nom</TableHead>
                     <TableHead className="border p-2 text-left">Service</TableHead>
                     <TableHead className="border p-2 text-left">Email</TableHead>
                     <TableHead className="border p-2 text-left">Entreprise</TableHead>
@@ -247,7 +249,7 @@ const EstimatePage = () => {
                     devisNonArchives.map((devis) => (
                       <TableRow key={devis._id}>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.civility} {devis.name}</Link>
                         </TableCell>
                         <TableCell className="border p-2">
                           <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
@@ -430,7 +432,7 @@ const EstimatePage = () => {
               <Table className=" hidden lg:table w-full border border-gray-300 shadow-lg">
                 <TableHeader>
                   <TableRow className="bg-gray-100">
-                    <TableHead className="border p-2 text-left">Nom</TableHead>
+                    <TableHead className="border p-2 text-left">Civilité et nom</TableHead>
                     <TableHead className="border p-2 text-left">Service</TableHead>
                     <TableHead className="border p-2 text-left">Email</TableHead>
                     <TableHead className="border p-2 text-left">Entreprise</TableHead>
@@ -451,7 +453,7 @@ const EstimatePage = () => {
                     devisArchives.map((devis) => (
                       <TableRow key={devis._id}>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.name}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.civility} {devis.name}</Link>
                         </TableCell>
                         <TableCell className="border p-2">
                           <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
