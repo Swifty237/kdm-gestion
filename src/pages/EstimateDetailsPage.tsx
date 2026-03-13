@@ -66,62 +66,73 @@ const EstimateDetailsPage = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isDeletingAdjustment, setIsDeletingAdjustment] = useState(false); // Nouvel état pour la suppression
 
+    const getStorageKey = () => {
+        if (!id) return '';
+        return `estimate_adjustment_${id}`;
+    };
+
     // Nouvelle fonction pour supprimer l'ajustement
     const handleDeleteAdjustment = () => {
         setShowDeleteConfirm(true);
     };
 
     // Fonction pour confirmer la suppression
-    // Fonction pour confirmer la suppression
     const confirmDelete = async () => {
         if (!devis) return;
-
+        console.log("confirmDelete function");
         setIsDeletingAdjustment(true);
 
-        try {
-            const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
+        // Cas 1 : l'ajustement est déjà en base → appel API
+        if (devis.adjustmentReason) {
+            try {
+                const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
+                const response = await fetch(`${API_URL}/api/devis/${id}/adjustment`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" }
+                });
 
-            const response = await fetch(`${API_URL}/api/devis/${id}/adjustment`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" }
-            });
+                const result = await response.json();
 
-            const result = await response.json();
+                if (response.ok) {
+                    // Mise à jour du devis
+                    if (result.devis) {
+                        setDevis(result.devis);
+                    } else {
+                        setDevis(prev => {
+                            if (!prev) return null;
+                            return {
+                                ...prev,
+                                finalAmount: '',
+                                adjustmentReason: '',
+                                adjustmentAmount: ''
+                            };
+                        });
+                    }
 
-            if (response.ok) {
-                // Option 1: Mettre à jour avec les données retournées par le serveur
-                if (result.devis) {
-                    setDevis(result.devis);
+                    // Supprimer du localStorage
+                    localStorage.removeItem(getStorageKey());
+
+                    setShowAdjustment(false);
+                    setAdjustmentReason('');
+                    setAdjustmentAmount('');
+                    setShowDeleteConfirm(false);
                 } else {
-                    // Option 2: Mettre à jour manuellement (fallback)
-                    setDevis(prev => {
-                        if (!prev) return null;
-                        return {
-                            ...prev,
-                            finalAmount: '',
-                            adjustmentReason: '',
-                            adjustmentAmount: ''
-                        };
-                    });
+                    console.error("Erreur lors de la suppression:", result.error);
+                    alert(result.error || "Une erreur est survenue lors de la suppression de l'ajustement.");
                 }
-
-                // Réinitialiser les états locaux
-                setShowAdjustment(false);
-                setAdjustmentReason('');
-                setAdjustmentAmount('');
-                setShowDeleteConfirm(false);
-
-                // Message de succès (optionnel)
-                // toast.success("Ajustement supprimé avec succès");
-
-            } else {
-                console.error("Erreur lors de la suppression:", result.error);
-                alert(result.error || "Une erreur est survenue lors de la suppression de l'ajustement.");
+            } catch (err) {
+                console.error("Erreur réseau:", err);
+                alert("Erreur de connexion au serveur.");
+            } finally {
+                setIsDeletingAdjustment(false);
             }
-        } catch (err) {
-            console.error("Erreur réseau:", err);
-            alert("Erreur de connexion au serveur.");
-        } finally {
+        } else {
+            // Cas 2 : ajustement local uniquement → suppression locale
+            setAdjustmentReason('');
+            setAdjustmentAmount('');
+            setShowAdjustment(false);
+            localStorage.removeItem(getStorageKey());
+            setShowDeleteConfirm(false);
             setIsDeletingAdjustment(false);
         }
     };
@@ -176,8 +187,14 @@ const EstimateDetailsPage = () => {
         setAdjustmentAmount(amount);
         setShowAdjustment(true);
         setShowModal(false);
-    };
 
+        const key = getStorageKey();
+        if (key) {
+            // Sauvegarde locale
+            localStorage.setItem(getStorageKey(), JSON.stringify({ reason, amount }));
+        }
+
+    };
     // Fonction pour annuler l'ajustement
     const handleAdjustmentCancel = () => {
         setShowModal(false);
@@ -204,10 +221,8 @@ const EstimateDetailsPage = () => {
             });
 
             if (response.ok) {
-                // Redirection vers la page précédente (liste des devis)
+                localStorage.removeItem(getStorageKey());
                 navigate(-1);
-                // Ou vers une page spécifique comme "/estimates"
-                // navigate("/estimates");
             } else {
                 const error = await response.json();
                 console.error("Erreur lors de la validation:", error);
@@ -221,6 +236,26 @@ const EstimateDetailsPage = () => {
         }
     };
 
+    const getDisplayAmount = () => {
+        // Si un ajustement est actif (local ou serveur non validé)
+        if (showAdjustment) {
+            const estimated = Number(devis?.estimatedAmount) || 0;
+            const adjustment = Number(adjustmentAmount) || 0;
+            const total = estimated + adjustment;
+            return total.toLocaleString();
+        }
+
+        // Sinon, si un montant final existe (déjà validé), on l'utilise
+        if (devis?.finalAmount) {
+            const val = Number(devis.finalAmount).toLocaleString();
+            return val;
+        }
+
+        // Par défaut, estimé seul
+        const estimated = Number(devis?.estimatedAmount) || 0;
+        return estimated.toLocaleString();
+    };
+
     useEffect(() => {
         const fetchDevis = async () => {
             try {
@@ -229,23 +264,32 @@ const EstimateDetailsPage = () => {
                 const data = await res.json();
 
                 if (res.ok) {
-                    setDevis(data);  // 1. On met d'abord à jour devis
+                    setDevis(data);
 
-                    // 2. On utilise DATA (pas devis) pour les valeurs
-                    console.log(data.adjustmentReason);
-                    if (data.adjustmentReason && data.adjustmentReason !== "") {
+                    // Restaurer depuis localStorage seulement si le serveur n'a pas encore d'ajustement
+                    if (!data.adjustmentReason) {
+                        const saved = localStorage.getItem(getStorageKey());
+                        if (saved) {
+                            try {
+                                const { reason, amount } = JSON.parse(saved);
+                                setAdjustmentReason(reason || '');
+                                setAdjustmentAmount(amount || '');
+                                if (reason || amount) {
+                                    setShowAdjustment(true);
+                                }
+                            } catch (e) {
+                                console.error('Erreur parsing localStorage', e);
+                            }
+                        }
+                    } else {
+                        // Si le serveur a un ajustement, on synchronise les states
                         setAdjustmentReason(data.adjustmentReason);
-                    }
-
-                    console.log(data.adjustmentAmount);
-                    if (data.adjustmentAmount && data.adjustmentAmount !== "") {
                         setAdjustmentAmount(data.adjustmentAmount);
                         setShowAdjustment(true);
                     }
                 } else {
                     console.error("Erreur :", data);
                 }
-
             } catch (err) {
                 console.error(err);
             } finally {
@@ -254,6 +298,7 @@ const EstimateDetailsPage = () => {
         };
 
         fetchDevis();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     if (loading) return <p className="text-center w-full">Chargement...</p>;
@@ -276,7 +321,7 @@ const EstimateDetailsPage = () => {
 
             </p>
 
-            <div className="w-[80%] mx-auto">
+            <div className="min-w-full md:w-[80%] mx-auto">
                 <section className="py-8 lg:py-16 px-4 sm:px-8 lg:px-16">
                     <Card className="shadow-lg">
                         {/* <CardHeader>
@@ -292,49 +337,49 @@ const EstimateDetailsPage = () => {
                                         <h4 className="text-xl font-bold text-[#001964]">Informations client</h4>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
                                             <p className="text-lg font-bold me-8">Civilité et nom :</p>
                                             <span>{devis.civility} {devis.name}</span>
                                         </div>
 
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Email :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Email :</p>
                                             <span>{devis.email}</span>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Entreprise :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Entreprise :</p>
                                             <span>{devis.entreprise || "-"}</span>
                                         </div>
 
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Adresse de facturation :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Adresse de facturation :</p>
                                             <span>{devis.billingAddress}</span>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Téléphone :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Téléphone :</p>
                                             <span>{devis.telephone || "-"}</span>
                                         </div>
 
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Service : </p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Service : </p>
                                             <span>{devis.service}</span>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Date :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Date :</p>
                                             <span>{devis.date || "-"}</span>
                                         </div>
 
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Formule :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Formule :</p>
                                             <span>{formatOffers(devis.offer)}</span>
                                         </div>
                                     </div>
@@ -346,51 +391,51 @@ const EstimateDetailsPage = () => {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Surface : </p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Surface : </p>
                                             <span>{devis.departure.surface} m2</span>
                                         </div>
 
                                         {devis.service == "transport" && (
-                                            <div className="flex items-center h-12">
-                                                <p className="text-lg font-bold me-8">Volume : </p>
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                                <p className="text-lg font-bold">Volume : </p>
                                                 <span>{devis.departure.volume || ""} m3</span>
                                             </div>
                                         )}
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Nombre de pièces : </p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Nombre de pièces : </p>
                                             <span>{devis.departure.rooms}</span>
                                         </div>
 
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Numéro d'étage :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Numéro d'étage :</p>
                                             <span>{formatFloor(devis.departure.floor)}</span>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Ascenceur : </p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Ascenceur : </p>
                                             <span>{devis.departure.elevator ? "Oui" : "Non"}</span>
                                         </div>
 
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Taille de l'ascenceur :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Taille de l'ascenceur :</p>
                                             <span>{devis.departure.elevatorSize || ""} personnes</span>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Taille de l'escalier : </p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Taille de l'escalier : </p>
                                             <span>{formatStairsSize(devis.departure.stairsSize)}</span>
                                         </div>
 
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Adresse :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Adresse :</p>
                                             <span>{devis.departure.address}</span>
                                         </div>
                                     </div>
@@ -402,52 +447,52 @@ const EstimateDetailsPage = () => {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Numéro d'étage :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Numéro d'étage :</p>
                                             <span>{formatFloor(devis.arrival.floor)}</span>
                                         </div>
 
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Ascenceur : </p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Ascenceur : </p>
                                             <span>{devis.arrival.elevator ? "Oui" : "Non"}</span>
                                         </div>
 
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Taille de l'ascenceur :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Taille de l'ascenceur :</p>
                                             <span>{devis.arrival.elevatorSize || ""} personnes</span>
                                         </div>
 
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Taille de l'escalier : </p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Taille de l'escalier : </p>
                                             <span>{formatStairsSize(devis.arrival.stairsSize)}</span>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Adresse :</p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Adresse :</p>
                                             <span>{devis.arrival.address}</span>
                                         </div>
 
                                         {devis.service == "transport" && (
-                                            <div className="flex items-center h-12">
-                                                <p className="text-lg font-bold me-8">Civilité et nom du contact :</p>
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                                <p className="text-lg font-bold">Civilité et nom du contact :</p>
                                                 <span>{devis.arrival.contactCivility} {devis.arrival.contactName || "-"}</span>
                                             </div>
                                         )}
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="flex items-center h-12">
-                                            <p className="text-lg font-bold me-8">Entreprise : </p>
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                            <p className="text-lg font-bold">Entreprise : </p>
                                             <span>{devis.arrival.entreprise || "-"}</span>
                                         </div>
                                         {devis.service == "transport" && (
-                                            <div className="flex items-center h-12">
-                                                <p className="text-lg font-bold me-8">Date :</p>
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
+                                                <p className="text-lg font-bold">Date :</p>
                                                 <span>{devis.arrival.date || "-"}</span>
                                             </div>
                                         )}
@@ -467,7 +512,7 @@ const EstimateDetailsPage = () => {
                                 </div>
 
                                 {/* SECTION AJUSTEMENT - Conditionnellement affichée */}
-                                {(showAdjustment || devis.adjustmentAmount !== "") && (
+                                {(showAdjustment || (devis.adjustmentAmount && devis.adjustmentAmount.trim() !== "")) && (
                                     <>
                                         <div className="grid grid-cols-1 gap-3 lg:gap-4 border border-[#001964]">
                                             <h4 className="text-3xl font-bold text-[#001964] text-center">Ajustement du montant du devis</h4>
@@ -487,7 +532,7 @@ const EstimateDetailsPage = () => {
                                     </>
                                 )}
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                <div className="flex flex-col">
                                     <div>
                                         <div>
                                             <div className="flex items-center text-lg">
@@ -499,16 +544,12 @@ const EstimateDetailsPage = () => {
                                                 <span>{devis.duration || ""}</span>
                                             </div>
                                         </div>
-                                        <div className="flex items-center h-12 text-2xl font-bold text-[#001964]">
-                                            <p className="me-8">Montant estimé du devis :</p>
-                                            {devis.finalAmount !== "" ? (
-                                                <span>{devis.finalAmount} €</span>
-                                            ) : (
-                                                <span>{(Number(devis.estimatedAmount) + Number(adjustmentAmount)).toFixed(2) || 0} €</span>
-                                            )}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 text-2xl font-bold text-[#001964] mt-4">
+                                            <p>Montant estimé du devis :</p>
+                                            <span className="text-end md:text-start">{getDisplayAmount()} €</span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center h-12 justify-end">
+                                    <div className="flex items-center h-12 justify-center lg:justify-end">
                                         {(showAdjustment || devis.adjustmentAmount) ? (
                                             // Si un ajustement existe, afficher le bouton Supprimer
                                             <Button
