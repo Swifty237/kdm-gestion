@@ -15,9 +15,41 @@ interface Devis {
   entreprise?: string;
   telephone?: string;
   service: string;
+  offer: string;
+  billingAddress: string;
+  devisNumber: string;
+  archived: boolean;
+  inManagement: boolean;
+  message: string;
+  duration: string;
+  distance: string;
+  estimatedAmount: string;
+  finalAmount: string;
   date?: string;
-  archived?: boolean;
-  inManagement?: boolean; // Ajout de cette propriété
+  adjustmentReason: string;
+  adjustmentAmount: string;
+  departure: {
+    surface: string;
+    volume: string;
+    rooms: string;
+    floor: string;
+    elevator: boolean;
+    elevatorSize: string;
+    stairsSize: string;
+    address: string;
+  };
+  arrival: {
+    floor: string;
+    elevator: boolean;
+    elevatorSize: string;
+    stairsSize: string;
+    address: string;
+    contactCivility: string;
+    contactName: string;
+    entreprise: string;
+    date: string;
+  }
+  createdAt?: string;
 }
 
 const EstimatePage = () => {
@@ -29,7 +61,7 @@ const EstimatePage = () => {
   );
 
   const [activeColumn, setActiveColumn] = useState(0);
-  const tableHeads = ["Nom", "Service", "	Email", "Entreprise", "Téléphone", "Date"];
+  const tableHeads = ["Nom", "Service", "Email", "Entreprise", "Numéro devis", "Date de création"];
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedDevisId, setSelectedDevisId] = useState<string | null>(null);
@@ -47,18 +79,6 @@ const EstimatePage = () => {
     setLoading(true)
 
     try {
-
-      // D'abord, désactiver la gestion si le devis est en cours de gestion
-      // const devis = devisList.find(d => d._id === id);
-
-      // if (devis?.inManagement) {
-      //   // Appel API pour désactiver la gestion
-      //   await fetch(`${API_URL}/api/devis/${id}/manage`, {
-      //     method: "PATCH",
-      //     headers: { "Content-Type": "application/json" },
-      //     body: JSON.stringify({ inManagement: false })
-      //   });
-      // }
 
       const response = await fetch(`${API_URL}/api/devis/${id}/archive`, {
         method: "PATCH",
@@ -127,7 +147,6 @@ const EstimatePage = () => {
   };
 
   const switchAttribut = (devis: Devis) => {
-
     switch (activeColumn) {
       case 0:
         return devis.name;
@@ -138,11 +157,12 @@ const EstimatePage = () => {
       case 3:
         return devis.entreprise;
       case 4:
-        return devis.telephone;
+        return `Devis n° ${devis.devisNumber}`;
       case 5:
-        return devis.date;
+        // Formatage optionnel de la date
+        return devis.createdAt ? new Date(devis.createdAt).toLocaleDateString() : "-";
       default:
-        return "-"; // si valeur inconnue
+        return "-";
     }
   };
 
@@ -232,9 +252,9 @@ const EstimatePage = () => {
                     <TableHead className="border p-2 text-left">Service</TableHead>
                     <TableHead className="border p-2 text-left">Email</TableHead>
                     <TableHead className="border p-2 text-left">Entreprise</TableHead>
-                    <TableHead className="border p-2 text-left">Téléphone</TableHead>
-                    <TableHead className="border p-2 text-left">Date</TableHead>
-                    <TableHead className="border p-2 text-left">Gestion</TableHead>
+                    <TableHead className="border p-2 text-center">Numéro devis</TableHead>
+                    <TableHead className="border p-2 text-center">Date de création</TableHead>
+                    <TableHead className="border p-2 text-center">Gestion</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -261,9 +281,11 @@ const EstimatePage = () => {
                           <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
                         </TableCell>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex items-center justify-center"> Devis n° {devis.devisNumber || '-'}</Link>
                         </TableCell>
-                        <TableCell className="border p-2">{devis.date || '-'}</TableCell>
+                        <TableCell className="border p-2 text-center">
+                          {devis.createdAt ? new Date(devis.createdAt).toLocaleDateString() : '-'}
+                        </TableCell>
 
                         <TableCell className="border p-2">
                           <div className="flex justify-around">
@@ -436,9 +458,9 @@ const EstimatePage = () => {
                     <TableHead className="border p-2 text-left">Service</TableHead>
                     <TableHead className="border p-2 text-left">Email</TableHead>
                     <TableHead className="border p-2 text-left">Entreprise</TableHead>
-                    <TableHead className="border p-2 text-left">Téléphone</TableHead>
-                    <TableHead className="border p-2 text-left">Date</TableHead>
-                    <TableHead className="border p-2 text-left">Gestion</TableHead>
+                    <TableHead className="border p-2 text-center">Numéro devis</TableHead>
+                    <TableHead className="border p-2 text-center">Date de création</TableHead>
+                    <TableHead className="border p-2 text-center">Gestion</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -465,9 +487,11 @@ const EstimatePage = () => {
                           <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
                         </TableCell>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.telephone || '-'}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex justify-center">Devis n° {devis.devisNumber || '-'}</Link>
                         </TableCell>
-                        <TableCell className="border p-2">{devis.date || '-'}</TableCell>
+                        <TableCell className="border p-2 text-center">
+                          {devis.createdAt ? new Date(devis.createdAt).toLocaleDateString() : '-'}
+                        </TableCell>
                         <TableCell className="border p-2">
                           <div className="flex items-center justify-around">
                             <div className="relative group">
