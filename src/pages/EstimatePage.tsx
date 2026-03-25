@@ -331,14 +331,19 @@ const EstimatePage = () => {
                     <TableHead className="border p-2 text-center">Gestion</TableHead>
                     <TableHead className="border p-2 text-center">
                       <div className="flex flex-col items-center gap-4">
-                        <Button
-                          size="sm"
-                          onClick={archiveSelectedDevis}
-                          disabled={selectedDevisIds.size === 0 || loadingAction}
-                          className="bg-gray-400 hover:bg-gray-500 text-sm"
-                        >
-                          <Archive className="h-4 w-4" />
-                        </Button>
+                        <div className="relative group">
+                          <Button
+                            size="sm"
+                            onClick={archiveSelectedDevis}
+                            disabled={selectedDevisIds.size === 0 || loadingAction}
+                            className="bg-gray-400 hover:bg-gray-500 text-sm"
+                          >
+                            <Archive className="h-4 w-4" />
+                          </Button>
+                          <span className="absolute z-[57] right-0 -translate-x-10 -top-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            Archiver la selection
+                          </span>
+                        </div>
 
                         <label className="flex items-center gap-1 text-sm">
                           <input
@@ -356,7 +361,7 @@ const EstimatePage = () => {
                 <TableBody>
                   {devisNonArchives.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-4">
+                      <TableCell colSpan={8} className="text-center py-4">
                         Aucun devis à traiter.
                       </TableCell>
                     </TableRow>
@@ -399,7 +404,7 @@ const EstimatePage = () => {
                                 En cours...
                               </span>
                             ) : (
-                              <div>
+                              <div className="relative group">
                                 <Button
                                   type="button"
                                   onClick={() => handleManageSingleDevis(devis._id)}
@@ -412,10 +417,10 @@ const EstimatePage = () => {
                                       Chargement...
                                     </span>
                                   ) : (
-                                    <Play className="" />
+                                    <Play />
                                   )}
                                 </Button>
-                                <span className="absolute z-[55] left-1/2 -translate-x-1/2 -bottom-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <span className="absolute z-[55] right-0 -translate-x-1/2 -bottom-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                   Activer la gestion
                                 </span>
                               </div>
@@ -547,23 +552,34 @@ const EstimatePage = () => {
                     <TableHead className="border p-2 text-center">
                       <div className="flex flex-col items-center gap-4">
                         <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={unArchiveSelectedDevis}
-                            disabled={selectedDevisIds.size === 0 || loadingAction}
-                            className="bg-gray-400 hover:bg-gray-500 text-sm"
-                          >
-                            <ArchiveRestore className="h-4 w-4" />
+                          <div className="relative group">
+                            <Button
+                              size="sm"
+                              onClick={unArchiveSelectedDevis}
+                              disabled={selectedDevisIds.size === 0 || loadingAction}
+                              className="bg-gray-400 hover:bg-gray-500 text-sm"
+                            >
+                              <ArchiveRestore className="h-4 w-4" />
+                            </Button>
+                            <span className="absolute z-[55] right-0 -translate-x-0 -top-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              Désarchiver la selection
+                            </span>
+                          </div>
 
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => setConfirmDeleteMultiple(true)}
-                            disabled={selectedDevisIds.size === 0 || loadingAction}
-                            className="bg-red-400 hover:bg-red-600 text-sm"
-                          >
-                            <Trash className="h-4 w-4" />
-                          </Button>
+                          <div className="relative group">
+                            <Button
+                              size="sm"
+                              onClick={() => setConfirmDeleteMultiple(true)}
+                              disabled={selectedDevisIds.size === 0 || loadingAction}
+                              className="bg-red-400 hover:bg-red-600 text-sm"
+                            >
+                              <Trash className="h-4 w-4" />
+                            </Button>
+
+                            <span className="absolute z-[55] right-0 -translate-x-0 -top-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              Supprimer la selection
+                            </span>
+                          </div>
                         </div>
                         <label className="flex items-center gap-1 text-sm">
                           <input
