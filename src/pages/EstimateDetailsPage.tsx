@@ -375,7 +375,7 @@ const EstimateDetailsPage = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                         <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
                                             <p className="text-lg font-bold">Date :</p>
-                                            <span>{devis.date || "-"}</span>
+                                            <span>{new Date(devis.date).toLocaleDateString() || "-"}</span>
                                         </div>
 
                                         <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">

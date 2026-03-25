@@ -66,12 +66,17 @@ const EstimatePage = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedDevisId, setSelectedDevisId] = useState<string | null>(null);
 
+  // État pour la recherche
+  const [searchTerm, setSearchTerm] = useState("");
+
 
   const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     localStorage.setItem("estimate_active_tab", value);
+    // Réinitialiser la recherche quand on change d'onglet
+    setSearchTerm("");
   };
 
 
@@ -193,6 +198,18 @@ const EstimatePage = () => {
     }
   };
 
+  // Fonction de filtrage
+  const filterDevis = (devis: Devis) => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      devis.name?.toLowerCase().includes(term) ||
+      devis.email?.toLowerCase().includes(term) ||
+      devis.entreprise?.toLowerCase().includes(term) ||
+      devis.devisNumber?.toLowerCase().includes(term)
+    );
+  };
+
   useEffect(() => {
     const fetchDevis = async () => {
       try {
@@ -215,9 +232,9 @@ const EstimatePage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Séparation des devis
-  const devisNonArchives = devisList.filter(d => !d.archived);
-  const devisArchives = devisList.filter(d => d.archived);
+  // Séparation et filtrage
+  const devisNonArchives = devisList.filter(d => !d.archived && filterDevis(d));
+  const devisArchives = devisList.filter(d => d.archived && filterDevis(d));
 
   return (
     <div className="flex flex-col items-center min-h-screen pt-16">
@@ -240,7 +257,19 @@ const EstimatePage = () => {
 
         {/* ONGLET 1 */}
         <TabsContent value="nonTraites">
-          <p className="text-xl my-8 font-bold text-center">Demande de devis à traiter</p>
+          <p className="text-xl mt-8 mb-4 font-bold text-center">Demande de devis à traiter</p>
+
+          {/* Barre de recherche */}
+          <div className="mb-8 flex justify-center">
+            <input
+              type="text"
+              placeholder="Rechercher par nom, email, entreprise ou numéro de devis..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#001964] focus:border-transparent"
+            />
+          </div>
+
           {loading ? (
             <p className="text-center">Chargement...</p>
           ) : (
@@ -445,7 +474,18 @@ const EstimatePage = () => {
 
         {/* ONGLET 2 */}
         <TabsContent value="archives">
-          <p className="text-xl my-8 font-bold text-center">Devis archivés</p>
+          <p className="text-xl mt-8 mb-4 font-bold text-center">Devis archivés</p>
+
+          {/* Barre de recherche */}
+          <div className="mb-8 flex justify-center">
+            <input
+              type="text"
+              placeholder="Rechercher par nom, email, entreprise ou numéro de devis..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#001964] focus:border-transparent"
+            />
+          </div>
 
           {loading ? (
             <p className="text-center">Chargement...</p>
