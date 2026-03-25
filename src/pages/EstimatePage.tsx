@@ -6,7 +6,6 @@ import { Archive, ArchiveRestore, ChevronLeft, ChevronRight, Trash, Play } from 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
-
 interface Devis {
   _id: string;
   civility: string;
@@ -48,106 +47,139 @@ interface Devis {
     contactName: string;
     entreprise: string;
     date: string;
-  }
+  };
   createdAt?: string;
 }
 
 const EstimatePage = () => {
   const [devisList, setDevisList] = useState<Devis[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingManageId, setLoadingManageId] = useState<string | null>(null); // Pour gérer l'état de chargement du bouton
+  const [loadingManageId, setLoadingManageId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(
     localStorage.getItem("estimate_active_tab") || "nonTraites"
   );
-
   const [activeColumn, setActiveColumn] = useState(0);
-  const tableHeads = ["Nom", "Service", "Email", "Entreprise", "Numéro devis", "Date de création"];
-
+  const tableHeads = ["Nom", "Service", "Email", "Entreprise", "Numéro devis", "Date de création", "Gestion"];
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedDevisId, setSelectedDevisId] = useState<string | null>(null);
-
-  // État pour la recherche
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [selectedDevisIds, setSelectedDevisIds] = useState<Set<string>>(new Set());
+  const [loadingAction, setLoadingAction] = useState(false);
+  const [confirmDeleteMultiple, setConfirmDeleteMultiple] = useState(false);
 
   const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
+
+  // Réinitialiser la sélection quand la recherche ou l'onglet change
+  useEffect(() => {
+    setSelectedDevisIds(new Set());
+  }, [searchTerm, activeTab]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     localStorage.setItem("estimate_active_tab", value);
-    // Réinitialiser la recherche quand on change d'onglet
     setSearchTerm("");
   };
 
-
   const archiveDevis = async (id: string) => {
-    setLoading(true)
-
-    try {
-
-      const response = await fetch(`${API_URL}/api/devis/${id}/archive`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (response.ok) {
-        // Mise à jour instantanée du state côté client
-        setDevisList(prev =>
-          prev.map(d => d._id === id ? { ...d, archived: true } : d)
-        );
-        setLoading(false);
-      } else {
-
-        console.error("Erreur lors de l'archivage");
-        setLoading(false);
-      }
-    } catch (err) {
-      console.error("Erreur réseau :", err);
-      setLoading(false);
-    }
+    // Fonction utilitaire pour un seul devis (utilisée par les actions groupées)
+    const response = await fetch(`${API_URL}/api/devis/${id}/archive`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) throw new Error(`Erreur archivage ${id}`);
+    return id;
   };
 
   const unArchiveDevis = async (id: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/api/devis/${id}/unarchive`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (response.ok) {
-        // Mise à jour immédiate dans le state React
-        setDevisList(prev =>
-          prev.map(d => d._id === id ? { ...d, archived: false } : d)
-        );
-        setLoading(false);
-      } else {
-        console.error("Erreur lors de la désarchivage");
-        setLoading(false);
-      }
-    } catch (err) {
-      console.error("Erreur réseau :", err);
-      setLoading(false);
-    }
+    const response = await fetch(`${API_URL}/api/devis/${id}/unarchive`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) throw new Error(`Erreur désarchivage ${id}`);
+    return id;
   };
 
   const deleteDevis = async (id: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/api/devis/${id}`, {
-        method: "DELETE",
-      });
+    const response = await fetch(`${API_URL}/api/devis/${id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error(`Erreur suppression ${id}`);
+    return id;
+  };
 
-      if (response.ok) {
-        setDevisList(prev => prev.filter(d => d._id !== id));
-        setLoading(false);
-      } else {
-        console.error("Erreur lors de la suppression");
-        setLoading(false);
-      }
+  const manageDevis = async (id: string) => {
+    const response = await fetch(`${API_URL}/api/devis/${id}/manage`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    if (!response.ok) throw new Error(`Erreur activation gestion ${id}`);
+    return id;
+  };
+
+  const handleManageSingleDevis = async (id: string) => {
+    setLoadingManageId(id);
+    try {
+      await manageDevis(id);
+      // Mise à jour immédiate du state
+      setDevisList(prev =>
+        prev.map(d => d._id === id ? { ...d, inManagement: true } : d)
+      );
     } catch (err) {
-      console.error("Erreur réseau :", err);
-      setLoading(false);
+      console.error("Erreur activation gestion", err);
+    } finally {
+      setLoadingManageId(null);
+    }
+  };
+
+  // Actions groupées
+  const archiveSelectedDevis = async () => {
+    if (selectedDevisIds.size === 0) return;
+    setLoadingAction(true);
+    try {
+      const promises = Array.from(selectedDevisIds).map(id => archiveDevis(id));
+      await Promise.all(promises);
+      // Mise à jour locale : passer archived à true pour les devis concernés
+      setDevisList(prev =>
+        prev.map(d => (selectedDevisIds.has(d._id) ? { ...d, archived: true } : d))
+      );
+      setSelectedDevisIds(new Set());
+    } catch (err) {
+      console.error("Erreur lors de l'archivage groupé", err);
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
+  const unArchiveSelectedDevis = async () => {
+    if (selectedDevisIds.size === 0) return;
+    setLoadingAction(true);
+    try {
+      const promises = Array.from(selectedDevisIds).map(id => unArchiveDevis(id));
+      await Promise.all(promises);
+      setDevisList(prev =>
+        prev.map(d => (selectedDevisIds.has(d._id) ? { ...d, archived: false } : d))
+      );
+      setSelectedDevisIds(new Set());
+    } catch (err) {
+      console.error("Erreur lors du désarchivage groupé", err);
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
+  const deleteSelectedDevis = async () => {
+    if (selectedDevisIds.size === 0) return;
+    setLoadingAction(true);
+    try {
+      const promises = Array.from(selectedDevisIds).map(id => deleteDevis(id));
+      await Promise.all(promises);
+      setDevisList(prev => prev.filter(d => !selectedDevisIds.has(d._id)));
+      setSelectedDevisIds(new Set());
+    } catch (err) {
+      console.error("Erreur lors de la suppression groupée", err);
+    } finally {
+      setLoadingAction(false);
     }
   };
 
@@ -164,41 +196,35 @@ const EstimatePage = () => {
       case 4:
         return `Devis n° ${devis.devisNumber}`;
       case 5:
-        // Formatage optionnel de la date
         return devis.createdAt ? new Date(devis.createdAt).toLocaleDateString() : "-";
+      case 6:
+        return devis.inManagement ? "En cours" : (
+          <div>
+            <Button
+              type="button"
+              onClick={() => handleManageSingleDevis(devis._id)}
+              disabled={loadingManageId === devis._id}
+              className="bg-[#16a085] hover:bg-[#1abc9c] text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed flex"
+            >
+              {loadingManageId === devis._id ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin">⚪</span>
+                  Chargement...
+                </span>
+              ) : (
+                <Play className="" />
+              )}
+            </Button>
+            <span className="absolute z-[55] left-1/2 -translate-x-1/2 -bottom-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              Activer la gestion
+            </span>
+          </div>
+        );
       default:
         return "-";
     }
   };
 
-  const manageDevis = async (id: string) => {
-    setLoadingManageId(id);
-
-    try {
-
-      const response = await fetch(`${API_URL}/api/devis/${id}/manage`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}) // ✅ IMPORTANT: Envoyer un objet vide
-      });
-
-      if (response.ok) {
-        // const data = await response.json();
-        setDevisList(prev =>
-          prev.map(d => d._id === id ? { ...d, inManagement: true } : d)
-        );
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Erreur lors de l'activation de la gestion:", errorData);
-      }
-    } catch (err) {
-      console.error("Erreur réseau :", err);
-    } finally {
-      setLoadingManageId(null);
-    }
-  };
-
-  // Fonction de filtrage
   const filterDevis = (devis: Devis) => {
     if (!searchTerm.trim()) return true;
     const term = searchTerm.toLowerCase();
@@ -215,7 +241,6 @@ const EstimatePage = () => {
       try {
         const response = await fetch(`${API_URL}/api/devis`);
         const data = await response.json();
-
         if (response.ok) {
           setDevisList(data);
         } else {
@@ -227,20 +252,42 @@ const EstimatePage = () => {
         setLoading(false);
       }
     };
-
     fetchDevis();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Séparation et filtrage
   const devisNonArchives = devisList.filter(d => !d.archived && filterDevis(d));
   const devisArchives = devisList.filter(d => d.archived && filterDevis(d));
+
+  // Fonction pour la case à cocher "tout sélectionner"
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = activeTab === "nonTraites"
+        ? devisNonArchives.map(d => d._id)
+        : devisArchives.map(d => d._id);
+      setSelectedDevisIds(new Set(allIds));
+    } else {
+      setSelectedDevisIds(new Set());
+    }
+  };
+
+  // Fonction pour basculer la sélection d'une ligne
+  const toggleSelect = (id: string) => {
+    setSelectedDevisIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id);
+      else newSet.add(id);
+      return newSet;
+    });
+  };
+
+  // Indique si toutes les lignes affichées sont sélectionnées
+  const allSelected = activeTab === "nonTraites"
+    ? devisNonArchives.length > 0 && devisNonArchives.every(d => selectedDevisIds.has(d._id))
+    : devisArchives.length > 0 && devisArchives.every(d => selectedDevisIds.has(d._id));
 
   return (
     <div className="flex flex-col items-center min-h-screen pt-16">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-[80%]">
-
-        {/* ONGLET SELECTEUR */}
         <TabsList className="mb-6 flex bg-[white] justify-around">
           <TabsTrigger
             value="nonTraites"
@@ -255,12 +302,10 @@ const EstimatePage = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* ONGLET 1 */}
+        {/* ONGLET 1 : Devis à traiter */}
         <TabsContent value="nonTraites">
-          <p className="text-xl mt-8 mb-4 font-bold text-center">Demande de devis à traiter</p>
-
-          {/* Barre de recherche */}
-          <div className="mb-8 flex justify-center">
+          <p className="text-xl my-8 font-bold text-center">Demande de devis à traiter</p>
+          <div className="mb-4 flex justify-center">
             <input
               type="text"
               placeholder="Rechercher par nom, email, entreprise ou numéro de devis..."
@@ -269,11 +314,11 @@ const EstimatePage = () => {
               className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#001964] focus:border-transparent"
             />
           </div>
-
           {loading ? (
             <p className="text-center">Chargement...</p>
           ) : (
             <>
+              {/* Tableau grand écran */}
               <Table className="hidden lg:table w-full border border-gray-300 shadow-lg">
                 <TableHeader>
                   <TableRow className="bg-gray-100">
@@ -284,9 +329,30 @@ const EstimatePage = () => {
                     <TableHead className="border p-2 text-center">Numéro devis</TableHead>
                     <TableHead className="border p-2 text-center">Date de création</TableHead>
                     <TableHead className="border p-2 text-center">Gestion</TableHead>
+                    <TableHead className="border p-2 text-center">
+                      <div className="flex flex-col items-center gap-4">
+                        <Button
+                          size="sm"
+                          onClick={archiveSelectedDevis}
+                          disabled={selectedDevisIds.size === 0 || loadingAction}
+                          className="bg-gray-400 hover:bg-gray-500 text-sm"
+                        >
+                          <Archive className="h-4 w-4" />
+                        </Button>
+
+                        <label className="flex items-center gap-1 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={allSelected}
+                            onChange={(e) => handleSelectAll(e.target.checked)}
+                            disabled={devisNonArchives.length === 0}
+                          />
+
+                        </label>
+                      </div>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
-
                 <TableBody>
                   {devisNonArchives.length === 0 ? (
                     <TableRow>
@@ -298,59 +364,47 @@ const EstimatePage = () => {
                     devisNonArchives.map((devis) => (
                       <TableRow key={devis._id}>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.civility} {devis.name}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">
+                            {devis.civility} {devis.name}
+                          </Link>
                         </TableCell>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">
+                            {devis.service}
+                          </Link>
                         </TableCell>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">
+                            {devis.email}
+                          </Link>
                         </TableCell>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">
+                            {devis.entreprise || '-'}
+                          </Link>
                         </TableCell>
-                        <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex items-center justify-center"> Devis n° {devis.devisNumber || '-'}</Link>
+                        <TableCell className="border p-2 text-center">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex justify-center">
+                            Devis n° {devis.devisNumber || '-'}
+                          </Link>
                         </TableCell>
                         <TableCell className="border p-2 text-center">
                           {devis.createdAt ? new Date(devis.createdAt).toLocaleDateString() : '-'}
                         </TableCell>
 
                         <TableCell className="border p-2">
-                          <div className="flex justify-around">
-                            <div className="relative group">
-                              <Button
-                                type="button"
-                                onClick={() => archiveDevis(devis._id)}
-                                className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
-                              >
-                                <Archive className="h-6 w-6" />
-                              </Button>
-
-                              {/* Tooltip */}
-                              <span
-                                className=" absolute z-[55] left-1/2 -translate-x-1/2 -bottom-3
-                                          whitespace-nowrap
-                                          bg-black text-white text-xs px-2 py-1 rounded
-                                          opacity-0 group-hover:opacity-100
-                                          transition-opacity duration-200
-                                        "
-                              >
-                                Archiver
-                              </span>
-                            </div>
-
+                          <div className="flex justify-center">
                             {devis.inManagement ? (
                               <span className="bg-green-100 text-green-800 px-3 py-2 rounded-md text-sm font-medium flex items-center">
                                 En cours...
                               </span>
                             ) : (
-                              <div className="relative group">
+                              <div>
                                 <Button
                                   type="button"
-                                  onClick={() => manageDevis(devis._id)}
+                                  onClick={() => handleManageSingleDevis(devis._id)}
                                   disabled={loadingManageId === devis._id}
-                                  className="bg-[#16a085] hover:bg-[#1abc9c] text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="bg-[#16a085] hover:bg-[#1abc9c] text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed flex"
                                 >
                                   {loadingManageId === devis._id ? (
                                     <span className="flex items-center gap-2">
@@ -358,7 +412,7 @@ const EstimatePage = () => {
                                       Chargement...
                                     </span>
                                   ) : (
-                                    <Play className="h-6 w-6" />
+                                    <Play className="" />
                                   )}
                                 </Button>
                                 <span className="absolute z-[55] left-1/2 -translate-x-1/2 -bottom-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -368,26 +422,31 @@ const EstimatePage = () => {
                             )}
                           </div>
                         </TableCell>
+
+                        <TableCell className="border p-2 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedDevisIds.has(devis._id)}
+                            onChange={() => toggleSelect(devis._id)}
+                          />
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
                 </TableBody>
               </Table>
 
+              {/* Version mobile */}
               <div className="lg:hidden">
-                {devisNonArchives.length !== 0 ? (
-                  <div className="flex items-center justify-center gap-4 my-4 lg:hidden">
+                {devisNonArchives.length !== 0 && (
+                  <div className="flex items-center justify-center gap-4 my-4">
                     <Button
                       className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
                       onClick={() => setActiveColumn(prev => Math.max(0, prev - 1))}
                     >
                       <ChevronLeft />
                     </Button>
-
-                    <span className="font-semibold">
-                      {tableHeads[activeColumn]}
-                    </span>
-
+                    <span className="font-semibold">{tableHeads[activeColumn]}</span>
                     <Button
                       className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
                       onClick={() => setActiveColumn(prev => Math.min(tableHeads.length - 1, prev + 1))}
@@ -395,16 +454,36 @@ const EstimatePage = () => {
                       <ChevronRight />
                     </Button>
                   </div>
-                ) : <></>}
-
+                )}
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-100">
                       <TableHead className="border">{tableHeads[activeColumn]}</TableHead>
-                      <TableHead className="border">Gestion</TableHead>
+                      <TableHead className="border">
+                        <div className="flex flex-col items-center gap-4 mt-2">
+                          <div className="">
+                            <Button
+                              size="sm"
+                              onClick={archiveSelectedDevis}
+                              disabled={selectedDevisIds.size === 0 || loadingAction}
+                              className="bg-gray-400 hover:bg-gray-500 text-xs"
+                            >
+                              <Archive className="" />
+                            </Button>
+
+                          </div>
+                          <label className="text-xs my-2">
+                            <input
+                              type="checkbox"
+                              checked={allSelected}
+                              onChange={(e) => handleSelectAll(e.target.checked)}
+                              disabled={devisNonArchives.length === 0}
+                            />
+                          </label>
+                        </div>
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
-
                   <TableBody>
                     {devisNonArchives.length === 0 ? (
                       <TableRow>
@@ -413,57 +492,24 @@ const EstimatePage = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      <>
-                        {devisNonArchives.map((row) => (
-                          <TableRow key={row._id}>
-                            <TableCell>
-                              <Link to={`/estimateDetails/${row._id}`} className="flex">
-                                {switchAttribut(row) ? switchAttribut(row) : "-"}
-                              </Link>
-                            </TableCell>
-                            <TableCell className="">
-                              <div className="flex items-center gap-2">
-                                <div className="relative group">
-                                  <Button
-                                    type="button"
-                                    onClick={() => archiveDevis(row._id)}
-                                    className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
-                                  >
-                                    <Archive className="h-6 w-6" />
-                                  </Button>
-                                  <span className="absolute z-[55] right-1/7 -translate-x-1/2 -bottom-4 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                    Archiver
-                                  </span>
-                                </div>
-
-                                {row.inManagement ? (
-                                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-medium">
-                                    En cours...
-                                  </span>
-                                ) : (
-                                  <div className="relative group">
-                                    <Button
-                                      type="button"
-                                      onClick={() => manageDevis(row._id)}
-                                      disabled={loadingManageId === row._id}
-                                      className="bg-[#16a085] hover:bg-[#1abc9c] text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                      {loadingManageId === row._id ? (
-                                        <span className="animate-spin">⚪</span>
-                                      ) : (
-                                        <Play className="h-6 w-6" />
-                                      )}
-                                    </Button>
-                                    <span className="absolute z-[55] right-1/7 -translate-x-1/2 -bottom-4 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                      Activer la gestion
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </>
+                      devisNonArchives.map((row) => (
+                        <TableRow key={row._id}>
+                          <TableCell>
+                            <Link to={`/estimateDetails/${row._id}`} className="flex">
+                              {switchAttribut(row) || "-"}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="border p-2 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedDevisIds.has(row._id)}
+                                onChange={() => toggleSelect(row._id)}
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
                     )}
                   </TableBody>
                 </Table>
@@ -472,12 +518,10 @@ const EstimatePage = () => {
           )}
         </TabsContent>
 
-        {/* ONGLET 2 */}
+        {/* ONGLET 2 : Devis archivés */}
         <TabsContent value="archives">
-          <p className="text-xl mt-8 mb-4 font-bold text-center">Devis archivés</p>
-
-          {/* Barre de recherche */}
-          <div className="mb-8 flex justify-center">
+          <p className="text-xl my-8 font-bold text-center">Devis archivés</p>
+          <div className="mb-4 flex justify-center">
             <input
               type="text"
               placeholder="Rechercher par nom, email, entreprise ou numéro de devis..."
@@ -486,12 +530,12 @@ const EstimatePage = () => {
               className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#001964] focus:border-transparent"
             />
           </div>
-
           {loading ? (
             <p className="text-center">Chargement...</p>
           ) : (
             <>
-              <Table className=" hidden lg:table w-full border border-gray-300 shadow-lg">
+              {/* Tableau grand écran */}
+              <Table className="hidden lg:table w-full border border-gray-300 shadow-lg">
                 <TableHeader>
                   <TableRow className="bg-gray-100">
                     <TableHead className="border p-2 text-left">Civilité et nom</TableHead>
@@ -500,14 +544,44 @@ const EstimatePage = () => {
                     <TableHead className="border p-2 text-left">Entreprise</TableHead>
                     <TableHead className="border p-2 text-center">Numéro devis</TableHead>
                     <TableHead className="border p-2 text-center">Date de création</TableHead>
-                    <TableHead className="border p-2 text-center">Gestion</TableHead>
+                    <TableHead className="border p-2 text-center">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={unArchiveSelectedDevis}
+                            disabled={selectedDevisIds.size === 0 || loadingAction}
+                            className="bg-gray-400 hover:bg-gray-500 text-sm"
+                          >
+                            <ArchiveRestore className="h-4 w-4" />
+
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => setConfirmDeleteMultiple(true)}
+                            disabled={selectedDevisIds.size === 0 || loadingAction}
+                            className="bg-red-400 hover:bg-red-600 text-sm"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <label className="flex items-center gap-1 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={allSelected}
+                            onChange={(e) => handleSelectAll(e.target.checked)}
+                            disabled={devisArchives.length === 0}
+                          />
+
+                        </label>
+                      </div>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
-
                 <TableBody>
                   {devisArchives.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-4">
+                      <TableCell colSpan={7} className="text-center py-4">
                         Aucun devis archivé.
                       </TableCell>
                     </TableRow>
@@ -515,72 +589,39 @@ const EstimatePage = () => {
                     devisArchives.map((devis) => (
                       <TableRow key={devis._id}>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.civility} {devis.name}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">
+                            {devis.civility} {devis.name}
+                          </Link>
                         </TableCell>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.service}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">
+                            {devis.service}
+                          </Link>
                         </TableCell>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.email}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">
+                            {devis.email}
+                          </Link>
                         </TableCell>
                         <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex">{devis.entreprise || '-'}</Link>
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex">
+                            {devis.entreprise || '-'}
+                          </Link>
                         </TableCell>
-                        <TableCell className="border p-2">
-                          <Link to={`/estimateDetails/${devis._id}`} className="flex justify-center">Devis n° {devis.devisNumber || '-'}</Link>
+                        <TableCell className="border p-2 text-center">
+                          <Link to={`/estimateDetails/${devis._id}`} className="flex justify-center">
+                            Devis n° {devis.devisNumber || '-'}
+                          </Link>
                         </TableCell>
                         <TableCell className="border p-2 text-center">
                           {devis.createdAt ? new Date(devis.createdAt).toLocaleDateString() : '-'}
                         </TableCell>
-                        <TableCell className="border p-2">
-                          <div className="flex items-center justify-around">
-                            <div className="relative group">
-                              <Button
-                                type="button"
-                                onClick={() => unArchiveDevis(devis._id)}
-                                className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
-                              >
-                                <ArchiveRestore className="h-4 w-4" />
-                              </Button>
-
-                              {/* Tooltip */}
-                              <span
-                                className=" absolute z-[54] right-1/7 -translate-x-1/2 -bottom-4
-                                          whitespace-nowrap
-                                          bg-black text-white text-xs px-2 py-1 rounded
-                                          opacity-0 group-hover:opacity-100
-                                          transition-opacity duration-200
-                                        "
-                              >
-                                Restorer
-                              </span>
-                            </div>
-
-                            <div className="relative group">
-                              <Button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedDevisId(devis._id);
-                                  setConfirmOpen(true);
-                                }}
-                                className="bg-red-400 hover:bg-red-600 text-sm lg:text-base"
-                              >
-                                <Trash className="h-4 w-4" />
-                              </Button>
-
-                              {/* Tooltip */}
-                              <span
-                                className=" absolute z-[55] right-1/7 -translate-x-1/2 -bottom-4
-                                          whitespace-nowrap
-                                          bg-black text-white text-xs px-2 py-1 rounded
-                                          opacity-0 group-hover:opacity-100
-                                          transition-opacity duration-200
-                                        "
-                              >
-                                Supprimer
-                              </span>
-                            </div>
-                          </div>
+                        <TableCell className="border p-2 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedDevisIds.has(devis._id)}
+                            onChange={() => toggleSelect(devis._id)}
+                          />
                         </TableCell>
                       </TableRow>
                     ))
@@ -588,21 +629,17 @@ const EstimatePage = () => {
                 </TableBody>
               </Table>
 
+              {/* Version mobile */}
               <div className="lg:hidden">
-
-                {devisArchives.length !== 0 ? (
-                  <div className="flex items-center justify-center gap-4 my-4 lg:hidden">
+                {devisArchives.length !== 0 && (
+                  <div className="flex items-center justify-center gap-4 my-4">
                     <Button
                       className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
                       onClick={() => setActiveColumn(prev => Math.max(0, prev - 1))}
                     >
                       <ChevronLeft />
                     </Button>
-
-                    <span className="font-semibold">
-                      {tableHeads[activeColumn]}
-                    </span>
-
+                    <span className="font-semibold">{tableHeads[activeColumn]}</span>
                     <Button
                       className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
                       onClick={() => setActiveColumn(prev => Math.min(tableHeads.length - 1, prev + 1))}
@@ -610,18 +647,44 @@ const EstimatePage = () => {
                       <ChevronRight />
                     </Button>
                   </div>
-                ) : <></>}
-
+                )}
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-100">
                       <TableHead className="border">{tableHeads[activeColumn]}</TableHead>
-                      <TableHead className="border">Gestion</TableHead>
+                      <TableHead className="border">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="flex gap-2 mt-2">
+                            <Button
+                              size="sm"
+                              onClick={unArchiveSelectedDevis}
+                              disabled={selectedDevisIds.size === 0 || loadingAction}
+                              className="bg-gray-400 hover:bg-gray-500 text-xs"
+                            >
+                              <ArchiveRestore className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => setConfirmDeleteMultiple(true)}
+                              disabled={selectedDevisIds.size === 0 || loadingAction}
+                              className="bg-red-400 hover:bg-red-600 text-xs"
+                            >
+                              <Trash className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <label className="text-xs my-2">
+                            <input
+                              type="checkbox"
+                              checked={allSelected}
+                              onChange={(e) => handleSelectAll(e.target.checked)}
+                              disabled={devisArchives.length === 0}
+                            />
+                          </label>
+                        </div>
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
-
                   <TableBody>
-
                     {devisArchives.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={2} className="text-center py-4">
@@ -629,67 +692,22 @@ const EstimatePage = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      <>
-                        {devisArchives.map((row) => (
-                          <TableRow key={row._id}>
-                            <TableCell>
-                              <Link to={`/estimateDetails/${row._id}`} className="flex">
-                                {switchAttribut(row) ? switchAttribut(row) : "-"}
-                              </Link>
-                            </TableCell>
-                            <TableCell className="">
-                              <div className="flex items-center justify-around">
-                                <div className="relative group">
-                                  <Button
-                                    type="button"
-                                    onClick={() => unArchiveDevis(row._id)}
-                                    className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
-                                  >
-                                    <ArchiveRestore className="h-4 w-4" />
-                                  </Button>
-
-                                  {/* Tooltip */}
-                                  <span
-                                    className=" absolute z-[54] right-1/7 -translate-x-1/2 -bottom-4
-                                          whitespace-nowrap
-                                          bg-black text-white text-xs px-2 py-1 rounded
-                                          opacity-0 group-hover:opacity-100
-                                          transition-opacity duration-200
-                                        "
-                                  >
-                                    Restorer
-                                  </span>
-                                </div>
-
-                                <div className="relative group">
-                                  <Button
-                                    type="button"
-                                    onClick={() => {
-                                      setSelectedDevisId(row._id);
-                                      setConfirmOpen(true);
-                                    }}
-                                    className="bg-red-400 hover:bg-red-600 text-sm lg:text-base"
-                                  >
-                                    <Trash className="h-4 w-4" />
-                                  </Button>
-
-                                  {/* Tooltip */}
-                                  <span
-                                    className=" absolute z-[55] right-1/7 -translate-x-1/2 -bottom-4
-                                          whitespace-nowrap
-                                          bg-black text-white text-xs px-2 py-1 rounded
-                                          opacity-0 group-hover:opacity-100
-                                          transition-opacity duration-200
-                                        "
-                                  >
-                                    Supprimer
-                                  </span>
-                                </div>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </>
+                      devisArchives.map((row) => (
+                        <TableRow key={row._id}>
+                          <TableCell>
+                            <Link to={`/estimateDetails/${row._id}`} className="flex">
+                              {switchAttribut(row) || "-"}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedDevisIds.has(row._id)}
+                              onChange={() => toggleSelect(row._id)}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))
                     )}
                   </TableBody>
                 </Table>
@@ -700,20 +718,32 @@ const EstimatePage = () => {
       </Tabs>
 
       <ConfirmDialog
-        open={confirmOpen}
-        title="Supprimer ce devis ?"
-        description="Voulez-vous vraiment supprimer ce devis ?"
+        open={confirmOpen || confirmDeleteMultiple}
+        title={"Supprimer ce (s) devis ?"}
+        description={
+          confirmDeleteMultiple
+            ? `Voulez-vous vraiment supprimer ${selectedDevisIds.size} devis sélectionnés ? Cette action est irréversible.`
+            : "Voulez-vous vraiment supprimer ce devis ?"
+        }
         confirmText="Supprimer"
         cancelText="Annuler"
         onConfirm={() => {
-          if (selectedDevisId) {
-            deleteDevis(selectedDevisId);
+          if (confirmDeleteMultiple) {
+            deleteSelectedDevis();
+          } else if (selectedDevisId) {
+            deleteDevis(selectedDevisId).catch(console.error);
           }
+          // Réinitialiser tous les états de dialogue
           setConfirmOpen(false);
+          setConfirmDeleteMultiple(false);
+          setSelectedDevisId(null);
         }}
-        onCancel={() => setConfirmOpen(false)}
+        onCancel={() => {
+          setConfirmOpen(false);
+          setConfirmDeleteMultiple(false);
+          setSelectedDevisId(null);
+        }}
       />
-
     </div>
   );
 };
