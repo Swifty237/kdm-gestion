@@ -286,25 +286,26 @@ const EstimatePage = () => {
     : devisArchives.length > 0 && devisArchives.every(d => selectedDevisIds.has(d._id));
 
   return (
-    <div className="flex flex-col items-center min-h-screen pt-16">
+    <div className="flex flex-col items-center min-h-screen pt-10">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-[80%]">
         <TabsList className="mb-6 flex bg-[white] justify-around">
           <TabsTrigger
             value="nonTraites"
-            className="data-[state=active]:bg-[#001964] data-[state=active]:text-white text-xl px-8 py-2">
-            Devis à traiter
+            className="data-[state=active]:bg-[#001964] data-[state=active]:text-white shadow-md text-lg w-full py-4">
+            Demandes à traiter
           </TabsTrigger>
           <TabsTrigger
             value="archives"
-            className="data-[state=active]:bg-[#001964] data-[state=active]:text-white text-xl px-8 py-2"
+            className="data-[state=active]:bg-[#001964] data-[state=active]:text-white shadow-md text-lg w-full py-4"
           >
-            Devis archivés
+            Demandes archivées
           </TabsTrigger>
         </TabsList>
 
         {/* ONGLET 1 : Devis à traiter */}
         <TabsContent value="nonTraites">
-          <p className="text-xl mt-8 font-bold text-center">Demandes à traiter / en cours ... ( {`${devisNonArchives.length}`} )</p>
+          <p className="text-xl mt-8 font-bold text-center">Demandes à traiter / en cours</p>
+          <p className="text-lg text-gray-500 mb-8 italic text-center">( {`${devisNonArchives.length} demandes`} )</p>
           <div className="my-4 flex justify-center">
             <input
               type="text"
@@ -525,7 +526,8 @@ const EstimatePage = () => {
 
         {/* ONGLET 2 : Devis archivés */}
         <TabsContent value="archives">
-          <p className="text-xl mt-8 font-bold text-center">Demandes archivées ( {`${devisArchives.length}`} )</p>
+          <p className="text-xl mt-8 font-bold text-center">Demandes archivées</p>
+          <p className="text-lg text-gray-500 mb-8 italic text-center">( {`${devisArchives.length} demandes`} )</p>
           <div className="my-4 flex justify-center">
             <input
               type="text"

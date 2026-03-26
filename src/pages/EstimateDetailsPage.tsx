@@ -543,7 +543,8 @@ const EstimateDetailsPage = () => {
                                                 <Button
                                                     className="bg-blue-500 hover:bg-blue-600 text-white min-w-[15vw] px-8"
                                                     onClick={() => {
-                                                        const link = `${window.location.origin}/virtual-tour/${devis.virtualTourToken}`;
+                                                        const customerFrontUrl = import.meta.env.VITE_KDM_PROJECT_FRONT_URI
+                                                        const link = `${customerFrontUrl}/virtual-tour/${devis.virtualTourToken}`;
                                                         setGeneratedLink(link);
                                                         setShowLinkModal(true);
                                                     }}
@@ -575,7 +576,7 @@ const EstimateDetailsPage = () => {
                                                     {isCreatingLink ? "Génération en cours..." : (
                                                         <>
                                                             <Route className="h-4 w-4 mr-1" />
-                                                            <span>Générer un lien de viste virtuelle</span>
+                                                            <span>Générer un lien de visite virtuelle</span>
                                                         </>
                                                     )}
                                                 </Button>

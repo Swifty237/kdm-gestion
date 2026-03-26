@@ -53,9 +53,9 @@ const Navigation = () => {
             <Button
               type="button"
               onClick={handleLogout}
-              className="bg-[#001964]/65 hover:bg-[#001964] text-sm lg:text-base"
+              className="bg-[#001964] hover:bg-[#001964]/90 text-sm lg:text-base"
             >
-              <LogOut className="h-6 w-6" />
+              <LogOut className="h-5 w-5" />
             </Button>
 
             {/* Tooltip */}
@@ -75,27 +75,27 @@ const Navigation = () => {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="lg:hidden p-2 rounded-md text-muted-foreground hover:text-[#001964] hover:bg-[#001964]/5"
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
 
           {userLogin === "admin" ? (
             <>
               <div className="hidden lg:flex flex-1 items-center justify-end space-x-8">
-                <Link to="/administration" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/administration"
+                <Link to="/administration" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-lg ${location.pathname === "/administration"
                   ? 'text-[#001964]'
                   : 'text-muted-foreground'
                   }`}
                 >
-                  <NotebookText className="mr-2 h-6 w-6" />
+                  <NotebookText className="mr-2 h-5 w-5" />
                   <span>Liste des gestionnaires</span>
                 </Link>
 
-                <Link to="/register" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/register"
+                <Link to="/register" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-lg ${location.pathname === "/register"
                   ? 'text-[#001964]'
                   : 'text-muted-foreground'
                   }`}
                 >
-                  <UserRoundPlus className="mr-2 h-6 w-6" />
+                  <UserRoundPlus className="mr-2 h-5 w-5" />
                   Ajouter un gestionnaire
                 </Link>
               </div>
@@ -103,23 +103,23 @@ const Navigation = () => {
           ) : (
             <>
               <div className="hidden lg:flex items-center justify-end space-x-20">
-                <Link to="/estimate" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/estimate"
+                <Link to="/estimate" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-lg ${location.pathname === "/estimate"
                   ? 'text-[#001964]'
                   : 'text-muted-foreground'
                   }`}
                 >
-                  <NotebookText className="mr-2 h-6 w-6" />
+                  <NotebookText className="mr-2 h-5 w-5" />
                   <span>Demandes de devis</span>
                 </Link>
 
                 <Link
                   to="/passwordModif"
-                  className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl ${location.pathname === "/passwordModif"
+                  className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-lg ${location.pathname === "/passwordModif"
                     ? 'text-[#001964]'
                     : 'text-muted-foreground'
                     }`}
                 >
-                  <UserCog className="mr-2 h-6 w-6" />
+                  <UserCog className="mr-2 h-5 w-5" />
                   Modifier le mot de passe
                 </Link>
               </div>
@@ -136,24 +136,24 @@ const Navigation = () => {
                   <Link
                     to="/administration"
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl py-2 ${location.pathname === "/administration"
+                    className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-lg py-2 ${location.pathname === "/administration"
                       ? 'text-[#001964]'
                       : 'text-muted-foreground'
                       }`}
                   >
-                    <NotebookText className="mr-4 h-6 w-6" />
+                    <NotebookText className="mr-2 h-5 w-5" />
                     Liste des gestionnaires
                   </Link>
 
                   <Link
                     to="/register"
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl py-2 ${location.pathname === "/register"
+                    className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-lg py-2 ${location.pathname === "/register"
                       ? 'text-[#001964]'
                       : 'text-muted-foreground'
                       }`}
                   >
-                    <UserRoundPlus className="mr-4 h-6 w-6" />
+                    <UserRoundPlus className="mr-2 h-5 w-5" />
                     Ajouter un gestionnaire
                   </Link>
                 </div>
@@ -169,24 +169,24 @@ const Navigation = () => {
                   <Link
                     to="/estimate"
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl py-2 ${location.pathname === "/estimate"
+                    className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-lg py-2 ${location.pathname === "/estimate"
                       ? 'text-[#001964]'
                       : 'text-muted-foreground'
                       }`}
                   >
-                    <NotebookText className="mr-4 h-6 w-6" />
+                    <NotebookText className="mr-2 h-5 w-5" />
                     <span>Demandes de devis</span>
                   </Link>
 
                   <Link
                     to="/passwordModif"
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-xl py-2 ${location.pathname === "/passwordModif"
+                    className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-lg py-2 ${location.pathname === "/passwordModif"
                       ? 'text-[#001964]'
                       : 'text-muted-foreground'
                       }`}
                   >
-                    <UserCog className="mr-4 h-6 w-6" />
+                    <UserCog className="mr-2 h-5 w-5" />
                     Modifier le mot de passe
                   </Link>
                 </div>
