@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from '@/components/ui/button';
-import { X, Trash2, PenLine, Send } from 'lucide-react';
+import { X, Trash2, PenLine, Route, ThumbsUp } from 'lucide-react';
 import AdjustmentModal from '@/components/AdjustmentModal';
 
 interface Devis {
@@ -26,6 +26,11 @@ interface Devis {
     date?: string;
     adjustmentReason: string;
     adjustmentAmount: string;
+    link?: string;
+    virtualTourToken?: string;      // token unique pour le lien
+    virtualTourPhotos?: string[];    // chemins des photos (max 20)
+    virtualTourVideos?: string[];    // chemins des vidéos
+    virtualTourCreatedAt?: string;   // date de création du lien
     departure: {
         surface: string;
         volume: string;
@@ -65,6 +70,37 @@ const EstimateDetailsPage = () => {
     const [adjustmentAmount, setAdjustmentAmount] = useState('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isDeletingAdjustment, setIsDeletingAdjustment] = useState(false); // Nouvel état pour la suppression
+    // const [isDeletingLink, setIsDeletingLink] = useState(false);
+    const [isCreatingLink, setIsCreatingLink] = useState(false);
+    const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+    const [showLinkModal, setShowLinkModal] = useState(false);
+
+    const handleGenerateLink = async () => {
+        if (!devis) return;
+        setIsCreatingLink(true);
+        try {
+            const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
+            const response = await fetch(`${API_URL}/api/devis/${devis._id}/virtual-tour`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setGeneratedLink(data.link);
+                setShowLinkModal(true);
+                // Mise à jour locale optionnelle
+                setDevis(prev => prev ? { ...prev, virtualTourToken: data.token } : null);
+            } else {
+                console.error("Erreur création lien", data.error);
+                alert("Erreur lors de la génération du lien.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Erreur réseau.");
+        } finally {
+            setIsCreatingLink(false);
+        }
+    };
 
     const getStorageKey = () => {
         if (!id) return '';
@@ -324,12 +360,7 @@ const EstimateDetailsPage = () => {
             <div className="min-w-full md:w-[80%] mx-auto">
                 <section className="py-8 lg:py-16 px-4 sm:px-8 lg:px-16">
                     <Card className="shadow-lg">
-                        {/* <CardHeader>
-                            <CardTitle className="text-xl lg:text-2xl text-[#001964]">Demande de devis</CardTitle>
-                            <CardDescription className="text-lg italic">
-                                --
-                            </CardDescription>
-                        </CardHeader> */}
+
                         <CardContent>
                             <div className="space-y-4 lg:space-y-6">
                                 <div className="px-8">
@@ -418,13 +449,13 @@ const EstimateDetailsPage = () => {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                         <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
-                                            <p className="text-lg font-bold">Ascenceur : </p>
+                                            <p className="text-lg font-bold">Ascenseur : </p>
                                             <span>{devis.departure.elevator ? "Oui" : "Non"}</span>
                                         </div>
 
                                         <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
-                                            <p className="text-lg font-bold">Taille de l'ascenceur :</p>
-                                            <span>{devis.departure.elevatorSize || ""} personnes</span>
+                                            <p className="text-lg font-bold">Taille de l'ascenseur :</p>
+                                            <span>{devis.departure.elevatorSize ? `${devis.departure.elevatorSize} personnes` : "-"}</span>
                                         </div>
                                     </div>
 
@@ -453,7 +484,7 @@ const EstimateDetailsPage = () => {
                                         </div>
 
                                         <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
-                                            <p className="text-lg font-bold">Ascenceur : </p>
+                                            <p className="text-lg font-bold">Ascenseur : </p>
                                             <span>{devis.arrival.elevator ? "Oui" : "Non"}</span>
                                         </div>
 
@@ -461,8 +492,8 @@ const EstimateDetailsPage = () => {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                         <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
-                                            <p className="text-lg font-bold">Taille de l'ascenceur :</p>
-                                            <span>{devis.arrival.elevatorSize || ""} personnes</span>
+                                            <p className="text-lg font-bold">Taille de l'ascenseur :</p>
+                                            <span>{devis.arrival.elevatorSize ? `${devis.arrival.elevatorSize} personnes` : "-"}</span>
                                         </div>
 
                                         <div className="grid grid-cols-1 lg:grid-cols-2 pt-4">
@@ -504,7 +535,56 @@ const EstimateDetailsPage = () => {
                                         <h4 className="text-xl font-bold text-[#001964]">Informations supplémentaires</h4>
                                     </div>
 
-                                    <div className="grid grid-cols-1 gap-3 lg:gap-4">
+                                    <div className="flex justify-around pt-4">
+                                        <p className="pt-2">Lien de visite virtuelle :</p>
+                                        <div className="flex items-center">
+                                            {devis.virtualTourToken ? (
+                                                // Si un lien existe déjà, afficher un bouton pour copier ou regénérer
+                                                <Button
+                                                    className="bg-blue-500 hover:bg-blue-600 text-white min-w-[15vw] px-8"
+                                                    onClick={() => {
+                                                        const link = `${window.location.origin}/virtual-tour/${devis.virtualTourToken}`;
+                                                        setGeneratedLink(link);
+                                                        setShowLinkModal(true);
+                                                    }}
+                                                >
+                                                    Afficher le lien existant
+                                                </Button>
+
+                                                // Button
+                                                //     className="bg-red-500 hover:bg-red-600 text-white me-4"
+                                                //     onClick={() => { }}
+                                                //     disabled={isDeletingLink || devis.archived}
+                                                // >
+                                                //     {isDeletingLink ? (
+                                                //         "Suppression..."
+                                                //     ) : (
+                                                //         <>
+                                                //             <Trash2 className="h-4 w-4 mr-1" />
+                                                //             Supprimer le lien de visite virtuelle
+                                                //         </>
+                                                //     )}
+                                                // </Button>
+                                            ) : (
+                                                <Button
+                                                    className="bg-gray-400 hover:bg-gray-500 min-w-[15vw] px-8"
+                                                    variant="destructive"
+                                                    onClick={handleGenerateLink}
+                                                    disabled={isCreatingLink || devis.archived}
+                                                >
+                                                    {isCreatingLink ? "Génération en cours..." : (
+                                                        <>
+                                                            <Route className="h-4 w-4 mr-1" />
+                                                            <span>Générer un lien de viste virtuelle</span>
+                                                        </>
+                                                    )}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-3 lg:gap-4 my-8">
+                                        <p className="text-lg font-bold">Message complémentaire :</p>
                                         <div className="flex items-center">
                                             <span>{devis.message || "-"}</span>
                                         </div>
@@ -586,7 +666,7 @@ const EstimateDetailsPage = () => {
                                         >
                                             {isValidating ? "Validation en cours..." : (
                                                 <>
-                                                    <Send className="h-4 w-4 mr-1" />
+                                                    <ThumbsUp className="h-4 w-4 mr-1" />
                                                     <span>Valider le devis</span>
                                                 </>
                                             )}
@@ -598,6 +678,7 @@ const EstimateDetailsPage = () => {
                     </Card>
                 </section>
             </div>
+
             {/* Modal d'ajustement */}
             <AdjustmentModal
                 isOpen={showModal}
@@ -623,6 +704,34 @@ const EstimateDetailsPage = () => {
                                 onClick={confirmDelete}
                             >
                                 Supprimer
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showLinkModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                        <h3 className="text-xl font-bold mb-4">Lien de visite virtuelle généré</h3>
+                        <p className="mb-2">Copiez ce lien pour l'envoyer au client :</p>
+                        <input
+                            type="text"
+                            readOnly
+                            value={generatedLink || ''}
+                            className="w-full border p-2 rounded mb-4 bg-gray-100"
+                        />
+                        <div className="flex justify-end space-x-4">
+                            <Button variant="outline" onClick={() => setShowLinkModal(false)}>
+                                Fermer
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(generatedLink || '');
+                                    alert("Lien copié !");
+                                }}
+                            >
+                                Copier
                             </Button>
                         </div>
                     </div>

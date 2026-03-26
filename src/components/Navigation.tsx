@@ -53,7 +53,7 @@ const Navigation = () => {
             <Button
               type="button"
               onClick={handleLogout}
-              className="bg-gray-400 hover:bg-gray-500 text-sm lg:text-base"
+              className="bg-[#001964]/65 hover:bg-[#001964] text-sm lg:text-base"
             >
               <LogOut className="h-6 w-6" />
             </Button>

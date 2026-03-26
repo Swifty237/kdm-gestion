@@ -304,8 +304,8 @@ const EstimatePage = () => {
 
         {/* ONGLET 1 : Devis à traiter */}
         <TabsContent value="nonTraites">
-          <p className="text-xl my-8 font-bold text-center">Demande de devis à traiter</p>
-          <div className="mb-4 flex justify-center">
+          <p className="text-xl mt-8 font-bold text-center">Demandes à traiter / en cours ... ( {`${devisNonArchives.length}`} )</p>
+          <div className="my-4 flex justify-center">
             <input
               type="text"
               placeholder="Rechercher par nom, email, entreprise ou numéro de devis..."
@@ -525,8 +525,8 @@ const EstimatePage = () => {
 
         {/* ONGLET 2 : Devis archivés */}
         <TabsContent value="archives">
-          <p className="text-xl my-8 font-bold text-center">Devis archivés</p>
-          <div className="mb-4 flex justify-center">
+          <p className="text-xl mt-8 font-bold text-center">Demandes archivées ( {`${devisArchives.length}`} )</p>
+          <div className="my-4 flex justify-center">
             <input
               type="text"
               placeholder="Rechercher par nom, email, entreprise ou numéro de devis..."
