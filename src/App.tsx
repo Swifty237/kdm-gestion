@@ -31,6 +31,7 @@ const AdminRoute = ({ children }) => {
 };
 
 const App = () => {
+
   useEffect(() => {
     // N’exécute pas en local
     if (import.meta.env.DEV) {
@@ -42,13 +43,10 @@ const App = () => {
       try {
         console.log("Initialisation de l’admin en cours…");
 
-        const response = await fetch(
-          `${import.meta.env.VITE_KDM_SERVER_URI}/api/initAdmin`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        const response = await fetch(`${import.meta.env.VITE_KDM_SERVER_URI}/api/initAdmin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
 
         const data = await response.json();
         console.log("Réponse initAdmin :", data.message || data.error);
