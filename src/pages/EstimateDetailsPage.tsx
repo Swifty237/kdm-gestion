@@ -552,20 +552,6 @@ const EstimateDetailsPage = () => {
                                                     Afficher le lien existant
                                                 </Button>
 
-                                                // Button
-                                                //     className="bg-red-500 hover:bg-red-600 text-white me-4"
-                                                //     onClick={() => { }}
-                                                //     disabled={isDeletingLink || devis.archived}
-                                                // >
-                                                //     {isDeletingLink ? (
-                                                //         "Suppression..."
-                                                //     ) : (
-                                                //         <>
-                                                //             <Trash2 className="h-4 w-4 mr-1" />
-                                                //             Supprimer le lien de visite virtuelle
-                                                //         </>
-                                                //     )}
-                                                // </Button>
                                             ) : (
                                                 <Button
                                                     className="bg-gray-400 hover:bg-gray-500 min-w-[15vw] px-8"
