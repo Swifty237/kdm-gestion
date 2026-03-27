@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from '@/components/ui/button';
 import { X, Trash2, PenLine, Route, ThumbsUp } from 'lucide-react';
 import AdjustmentModal from '@/components/AdjustmentModal';
+import { useNavHeight } from '@/context/NavHeightContext';
 
 interface Devis {
     _id: string;
@@ -74,6 +75,8 @@ const EstimateDetailsPage = () => {
     const [isCreatingLink, setIsCreatingLink] = useState(false);
     const [generatedLink, setGeneratedLink] = useState<string | null>(null);
     const [showLinkModal, setShowLinkModal] = useState(false);
+
+    const navHeight = useNavHeight();
 
     const handleGenerateLink = async () => {
         if (!devis) return;
@@ -343,19 +346,29 @@ const EstimateDetailsPage = () => {
     return (
         <div className="flex flex-col justify-center items-center min-h-screen p-4">
 
-            <div className="flex justify-end w-[80%]">
-                <Button onClick={() => navigate(-1)} className="bg-gray-400 hover:bg-gray-500">
-                    <X className="h-6 w-6" />
-                </Button>
+            <div
+                className="bg-[#001964] w-full h-[5px] fixed"
+                style={{
+                    top: `${navHeight}px`,
+                    zIndex: 99
+                }}
+            >
             </div>
 
-            <h2 className="text-3xl font-bold text-[#001964] pt-8">
-                Détail de la demande de devis n° {devis.devisNumber}
-            </h2>
+            <div
+                className="sticky w-full bg-white pb-8 border-b shadow-lg"
+                style={{ top: `${navHeight + 5}px` }}
+            >
+                <div className="flex justify-between items-center p-4">
+                    <h2 className="text-2xl font-bold text-[#001964]">
+                        Détail de la demande de devis n° {devis.devisNumber}
+                    </h2>
 
-            <p className="text-xl font-bold">
-
-            </p>
+                    <Button onClick={() => navigate(-1)} className="bg-gray-400 hover:bg-gray-500">
+                        <X className="h-6 w-6" />
+                    </Button>
+                </div>
+            </div>
 
             <div className="min-w-full md:w-[80%] mx-auto">
                 <section className="py-8 lg:py-16 px-4 sm:px-8 lg:px-16">

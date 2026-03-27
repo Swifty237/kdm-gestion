@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import Navigation from './Navigation';
 import { useLocation } from "react-router-dom";
+import NavHeightProvider from '@/context/NavHeightProvider';
 
 interface LayoutProps {
   children: ReactNode;
@@ -8,7 +9,6 @@ interface LayoutProps {
 
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
-
   const [navHeight, setNavHeight] = useState(0);
 
   useEffect(() => {
@@ -25,16 +25,16 @@ const Layout = ({ children }: LayoutProps) => {
     return () => window.removeEventListener('resize', updateNavHeight);
   }, []);
 
-  // Liste des routes où la navigation doit être masquée
   const hideNavRoutes = ["/"];
-
   const shouldHideNav = hideNavRoutes.includes(location.pathname);
 
   return (
     <div className="min-h-screen">
-      {!shouldHideNav && <Navigation />}  {/* ← caché si on est sur / */}
+      {!shouldHideNav && <Navigation />}
       <main style={{ paddingTop: `${navHeight}px` }}>
-        {children}
+        <NavHeightProvider height={navHeight}>
+          {children}
+        </NavHeightProvider>
       </main>
     </div>
   );

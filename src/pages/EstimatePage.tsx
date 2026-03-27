@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Archive, ArchiveRestore, ChevronLeft, ChevronRight, Trash, Play } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { useNavHeight } from '@/context/NavHeightContext';
 
 interface Devis {
   _id: string;
@@ -66,6 +67,9 @@ const EstimatePage = () => {
   const [selectedDevisIds, setSelectedDevisIds] = useState<Set<string>>(new Set());
   const [loadingAction, setLoadingAction] = useState(false);
   const [confirmDeleteMultiple, setConfirmDeleteMultiple] = useState(false);
+
+  const navHeight = useNavHeight();
+
 
   const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
 
@@ -286,9 +290,20 @@ const EstimatePage = () => {
     : devisArchives.length > 0 && devisArchives.every(d => selectedDevisIds.has(d._id));
 
   return (
-    <div className="flex flex-col items-center min-h-screen pt-10">
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-[80%]">
-        <TabsList className="mb-6 flex bg-[white] justify-around">
+    <div className="flex flex-col items-center min-h-screen">
+      <div
+        className="bg-[#001964] w-full h-[5px] fixed"
+        style={{
+          top: `${navHeight}px`,
+          zIndex: 99
+        }}
+      >
+      </div>
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-[80%] mt-2">
+        <TabsList
+          className="sticky mb-6 flex bg-[white] justify-around z-10"
+          style={{ top: `${navHeight + 10}px` }}
+        >
           <TabsTrigger
             value="nonTraites"
             className="data-[state=active]:bg-[#001964] data-[state=active]:text-white shadow-md text-lg w-full py-4">
@@ -296,7 +311,7 @@ const EstimatePage = () => {
           </TabsTrigger>
           <TabsTrigger
             value="archives"
-            className="data-[state=active]:bg-[#001964] data-[state=active]:text-white shadow-md text-lg w-full py-4"
+            className="bg-white data-[state=active]:bg-[#001964] data-[state=active]:text-white shadow-md text-lg w-full py-4"
           >
             Demandes archivées
           </TabsTrigger>
@@ -762,6 +777,8 @@ const EstimatePage = () => {
           setSelectedDevisId(null);
         }}
       />
+
+      <div className="w-full h-[50px]"></div>
     </div>
   );
 };

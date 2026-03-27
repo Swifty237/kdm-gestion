@@ -44,7 +44,7 @@ const Navigation = () => {
       ref={navRef}
       id="main-nav"
       className={`
-        fixed top-0 left-0 w-full z-50 backdrop-blur-sm transition-shadow duration-300 pt-7 pb-2 flex justify-center
+        fixed top-0 left-0 w-full z-50 backdrop-blur-sm transition-shadow duration-300 pt-7 flex justify-center
         ${hasShadow ? "shadow-md bg-white/90" : "bg-white/50"}
       `}>
       <div className="w-[90%] lg:w-[80%] flex justify-between flex-col">
