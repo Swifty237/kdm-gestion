@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -69,6 +70,10 @@ const EstimatePage = () => {
   const [confirmDeleteMultiple, setConfirmDeleteMultiple] = useState(false);
 
   const navHeight = useNavHeight();
+
+  const [currentPageNonTraites, setCurrentPageNonTraites] = useState(1);
+  const [currentPageArchives, setCurrentPageArchives] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
 
   const API_URL = import.meta.env.VITE_KDM_SERVER_URI;
@@ -241,6 +246,16 @@ const EstimatePage = () => {
   };
 
   useEffect(() => {
+    setSelectedDevisIds(new Set());
+    // Réinitialiser la page courante selon l'onglet actif
+    if (activeTab === "nonTraites") {
+      setCurrentPageNonTraites(1);
+    } else {
+      setCurrentPageArchives(1);
+    }
+  }, [searchTerm, activeTab]);
+
+  useEffect(() => {
     const fetchDevis = async () => {
       try {
         const response = await fetch(`${API_URL}/api/devis`);
@@ -262,12 +277,32 @@ const EstimatePage = () => {
   const devisNonArchives = devisList.filter(d => !d.archived && filterDevis(d));
   const devisArchives = devisList.filter(d => d.archived && filterDevis(d));
 
+  // Pagination pour l'onglet "nonTraites"
+  const totalPagesNonTraites = Math.ceil(devisNonArchives.length / ITEMS_PER_PAGE);
+  const startIndexNonTraites = (currentPageNonTraites - 1) * ITEMS_PER_PAGE;
+  const paginatedNonArchives = devisNonArchives.slice(startIndexNonTraites, startIndexNonTraites + ITEMS_PER_PAGE);
+
+  // Pagination pour l'onglet "archives"
+  const totalPagesArchives = Math.ceil(devisArchives.length / ITEMS_PER_PAGE);
+  const startIndexArchives = (currentPageArchives - 1) * ITEMS_PER_PAGE;
+  const paginatedArchives = devisArchives.slice(startIndexArchives, startIndexArchives + ITEMS_PER_PAGE);
+
+  useEffect(() => {
+    if (activeTab === "nonTraites" && currentPageNonTraites > totalPagesNonTraites && totalPagesNonTraites > 0) {
+      setCurrentPageNonTraites(totalPagesNonTraites);
+    }
+    if (activeTab === "archives" && currentPageArchives > totalPagesArchives && totalPagesArchives > 0) {
+      setCurrentPageArchives(totalPagesArchives);
+    }
+  }, [devisNonArchives, devisArchives, activeTab, totalPagesNonTraites, totalPagesArchives]);
+
+
   // Fonction pour la case à cocher "tout sélectionner"
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       const allIds = activeTab === "nonTraites"
-        ? devisNonArchives.map(d => d._id)
-        : devisArchives.map(d => d._id);
+        ? paginatedNonArchives.map(d => d._id)
+        : paginatedArchives.map(d => d._id);
       setSelectedDevisIds(new Set(allIds));
     } else {
       setSelectedDevisIds(new Set());
@@ -319,23 +354,29 @@ const EstimatePage = () => {
 
         {/* ONGLET 1 : Devis à traiter */}
         <TabsContent value="nonTraites">
-          <p className="text-xl mt-8 font-bold text-center">Demandes à traiter / en cours</p>
-          <p className="text-lg text-gray-500 mb-8 italic text-center">( {`${devisNonArchives.length} demandes`} )</p>
-          <div className="my-4 flex justify-center">
-            <input
-              type="text"
-              placeholder="Rechercher par nom, email, entreprise ou numéro de devis..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#001964] focus:border-transparent"
-            />
+
+          <div className="my-4 md:flex justify-around w-full">
+            <div>
+              <p className="text-xl mt-8 font-bold text-center">Demandes à traiter / en cours</p>
+              <p className="text-lg text-gray-500 italic text-center">( {`${devisNonArchives.length} demandes`} )</p>
+            </div>
+
+            <div className="md:w-[50%] flex items-center justify-center">
+              <input
+                type="text"
+                placeholder="Rechercher par nom, email, entreprise ou numéro de devis..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#001964] focus:border-transparent"
+              />
+            </div>
           </div>
           {loading ? (
             <p className="text-center">Chargement...</p>
           ) : (
             <>
               {/* Tableau grand écran */}
-              <Table className="hidden lg:table w-full border border-gray-300 shadow-lg">
+              <table className="hidden lg:table w-full border border-gray-300 shadow-lg">
                 <TableHeader>
                   <TableRow className="bg-gray-100">
                     <TableHead className="border p-2 text-left">Civilité et nom</TableHead>
@@ -382,7 +423,7 @@ const EstimatePage = () => {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    devisNonArchives.map((devis) => (
+                    paginatedNonArchives.map((devis) => (
                       <TableRow key={devis._id}>
                         <TableCell className="border p-2">
                           <Link to={`/estimateDetails/${devis._id}`} className="flex">
@@ -455,7 +496,33 @@ const EstimatePage = () => {
                     ))
                   )}
                 </TableBody>
-              </Table>
+              </table>
+
+              {devisNonArchives.length > ITEMS_PER_PAGE && (
+                <div className="hidden lg:flex justify-center items-center gap-4 my-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPageNonTraites(p => Math.max(1, p - 1))}
+                    disabled={currentPageNonTraites === 1}
+                    className="px-4 py-2"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Précédent
+                  </Button>
+                  <span className="text-sm">
+                    Page {currentPageNonTraites} sur {totalPagesNonTraites}
+                  </span>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentPageNonTraites(p => Math.min(totalPagesNonTraites, p + 1))}
+                    disabled={currentPageNonTraites === totalPagesNonTraites}
+                    className="px-4 py-2"
+                  >
+                    Suivant
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
 
               {/* Version mobile */}
               <div className="lg:hidden">
@@ -513,7 +580,7 @@ const EstimatePage = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      devisNonArchives.map((row) => (
+                      paginatedNonArchives.map((row) => (
                         <TableRow key={row._id}>
                           <TableCell>
                             <Link to={`/estimateDetails/${row._id}`} className="flex">
@@ -534,6 +601,32 @@ const EstimatePage = () => {
                     )}
                   </TableBody>
                 </Table>
+
+                {devisNonArchives.length > ITEMS_PER_PAGE && (
+                  <div className="flex justify-center items-center gap-4 my-6">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPageNonTraites(p => Math.max(1, p - 1))}
+                      disabled={currentPageNonTraites === 1}
+                      className="px-4 py-2"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Précédent
+                    </Button>
+                    <span className="text-sm">
+                      Page {currentPageNonTraites} sur {totalPagesNonTraites}
+                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPageNonTraites(p => Math.min(totalPagesNonTraites, p + 1))}
+                      disabled={currentPageNonTraites === totalPagesNonTraites}
+                      className="px-4 py-2"
+                    >
+                      Suivant
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -541,16 +634,21 @@ const EstimatePage = () => {
 
         {/* ONGLET 2 : Devis archivés */}
         <TabsContent value="archives">
-          <p className="text-xl mt-8 font-bold text-center">Demandes archivées</p>
-          <p className="text-lg text-gray-500 mb-8 italic text-center">( {`${devisArchives.length} demandes`} )</p>
-          <div className="my-4 flex justify-center">
-            <input
-              type="text"
-              placeholder="Rechercher par nom, email, entreprise ou numéro de devis..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#001964] focus:border-transparent"
-            />
+          <div className="my-4 md:flex justify-around w-full">
+            <div>
+              <p className="text-xl mt-8 font-bold text-center">Demandes archivées</p>
+              <p className="text-lg text-gray-500 italic text-center">( {`${devisArchives.length} demandes`} )</p>
+            </div>
+
+            <div className="md:w-[50%] my-4 flex items-center justify-center">
+              <input
+                type="text"
+                placeholder="Rechercher par nom, email, entreprise ou numéro de devis..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#001964] focus:border-transparent"
+              />
+            </div>
           </div>
           {loading ? (
             <p className="text-center">Chargement...</p>
@@ -619,7 +717,7 @@ const EstimatePage = () => {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    devisArchives.map((devis) => (
+                    paginatedArchives.map((devis) => (
                       <TableRow key={devis._id}>
                         <TableCell className="border p-2">
                           <Link to={`/estimateDetails/${devis._id}`} className="flex">
@@ -725,7 +823,7 @@ const EstimatePage = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      devisArchives.map((row) => (
+                      paginatedArchives.map((row) => (
                         <TableRow key={row._id}>
                           <TableCell>
                             <Link to={`/estimateDetails/${row._id}`} className="flex">
@@ -778,7 +876,6 @@ const EstimatePage = () => {
         }}
       />
 
-      <div className="w-full h-[50px]"></div>
     </div>
   );
 };
