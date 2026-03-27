@@ -356,7 +356,7 @@ const EstimateDetailsPage = () => {
             </div>
 
             <div
-                className="sticky w-full bg-white pb-8 border-b shadow-lg"
+                className="sticky w-full bg-white pb-8 border-b shadow-lg z-10"
                 style={{ top: `${navHeight + 5}px` }}
             >
                 <div className="flex justify-between items-center p-4">

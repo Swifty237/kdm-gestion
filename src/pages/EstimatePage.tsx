@@ -292,7 +292,7 @@ const EstimatePage = () => {
   return (
     <div className="flex flex-col items-center min-h-screen">
       <div
-        className="bg-[#001964] w-full h-[5px] fixed"
+        className="bg-[#001964] w-full h-[2px] fixed"
         style={{
           top: `${navHeight}px`,
           zIndex: 99
@@ -306,7 +306,7 @@ const EstimatePage = () => {
         >
           <TabsTrigger
             value="nonTraites"
-            className="data-[state=active]:bg-[#001964] data-[state=active]:text-white shadow-md text-lg w-full py-4">
+            className="bg-white data-[state=active]:bg-[#001964] data-[state=active]:text-white shadow-md text-lg w-full py-4">
             Demandes à traiter
           </TabsTrigger>
           <TabsTrigger
