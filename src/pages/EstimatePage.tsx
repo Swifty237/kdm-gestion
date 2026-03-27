@@ -355,7 +355,7 @@ const EstimatePage = () => {
         {/* ONGLET 1 : Devis à traiter */}
         <TabsContent value="nonTraites">
 
-          <div className="my-4 md:flex justify-around w-full">
+          <div className="my-4 md:flex justify-around items-center w-full">
             <div>
               <p className="text-xl mt-8 font-bold text-center">Demandes à traiter / en cours</p>
               <p className="text-lg text-gray-500 italic text-center">( {`${devisNonArchives.length} demandes`} )</p>
@@ -370,6 +370,16 @@ const EstimatePage = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#001964] focus:border-transparent"
               />
             </div>
+
+            <Button
+              size="sm"
+              onClick={archiveSelectedDevis}
+              disabled={selectedDevisIds.size === 0 || loadingAction}
+              className="bg-gray-400 hover:bg-gray-500 text-sm my-2 hidden lg:flex"
+            >
+              <Archive className="h-4 w-4" />
+              <span>Archiver la selection</span>
+            </Button>
           </div>
           {loading ? (
             <p className="text-center">Chargement...</p>
@@ -388,20 +398,6 @@ const EstimatePage = () => {
                     <TableHead className="border p-2 text-center">Gestion</TableHead>
                     <TableHead className="border p-2 text-center">
                       <div className="flex flex-col items-center gap-4">
-                        <div className="relative group">
-                          <Button
-                            size="sm"
-                            onClick={archiveSelectedDevis}
-                            disabled={selectedDevisIds.size === 0 || loadingAction}
-                            className="bg-gray-400 hover:bg-gray-500 text-sm"
-                          >
-                            <Archive className="h-4 w-4" />
-                          </Button>
-                          <span className="absolute z-[57] right-0 -translate-x-10 -top-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            Archiver la selection
-                          </span>
-                        </div>
-
                         <label className="flex items-center gap-1 text-sm">
                           <input
                             type="checkbox"
@@ -527,20 +523,36 @@ const EstimatePage = () => {
               {/* Version mobile */}
               <div className="lg:hidden">
                 {devisNonArchives.length !== 0 && (
-                  <div className="flex items-center justify-center gap-4 my-4">
-                    <Button
-                      className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
-                      onClick={() => setActiveColumn(prev => Math.max(0, prev - 1))}
-                    >
-                      <ChevronLeft />
-                    </Button>
-                    <span className="font-semibold">{tableHeads[activeColumn]}</span>
-                    <Button
-                      className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
-                      onClick={() => setActiveColumn(prev => Math.min(tableHeads.length - 1, prev + 1))}
-                    >
-                      <ChevronRight />
-                    </Button>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-center gap-4 my-4">
+                      <Button
+                        className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
+                        onClick={() => setActiveColumn(prev => Math.max(0, prev - 1))}
+                      >
+                        <ChevronLeft />
+                      </Button>
+                      <span className="font-semibold">{tableHeads[activeColumn]}</span>
+                      <Button
+                        className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
+                        onClick={() => setActiveColumn(prev => Math.min(tableHeads.length - 1, prev + 1))}
+                      >
+                        <ChevronRight />
+                      </Button>
+                    </div>
+
+                    <div className="">
+                      <Button
+                        size="sm"
+                        onClick={archiveSelectedDevis}
+                        disabled={selectedDevisIds.size === 0 || loadingAction}
+                        className="bg-gray-400 hover:bg-gray-500 text-xs"
+                      >
+                        <Archive className="relative group" />
+                      </Button>
+                      <span className="absolute z-[55] right-0 -translate-x-0 -top-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        Archiver la selection
+                      </span>
+                    </div>
                   </div>
                 )}
                 <Table>
@@ -549,17 +561,6 @@ const EstimatePage = () => {
                       <TableHead className="border">{tableHeads[activeColumn]}</TableHead>
                       <TableHead className="border">
                         <div className="flex flex-col items-center gap-4 mt-2">
-                          <div className="">
-                            <Button
-                              size="sm"
-                              onClick={archiveSelectedDevis}
-                              disabled={selectedDevisIds.size === 0 || loadingAction}
-                              className="bg-gray-400 hover:bg-gray-500 text-xs"
-                            >
-                              <Archive className="" />
-                            </Button>
-
-                          </div>
                           <label className="text-xs my-2">
                             <input
                               type="checkbox"
@@ -649,6 +650,39 @@ const EstimatePage = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#001964] focus:border-transparent"
               />
             </div>
+
+            <div className="hidden lg:flex gap-2 items-center">
+              <div className="relative group">
+                <Button
+                  size="sm"
+                  onClick={unArchiveSelectedDevis}
+                  disabled={selectedDevisIds.size === 0 || loadingAction}
+                  className="bg-gray-400 hover:bg-gray-500 text-sm"
+                >
+                  <ArchiveRestore className="h-4 w-4" />
+                  <span>Désarchiver la selection</span>
+                </Button>
+                {/* <span className="absolute z-[55] right-0 -translate-x-0 -top-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  Désarchiver la selection
+                </span> */}
+              </div>
+
+              <div className="relative group">
+                <Button
+                  size="sm"
+                  onClick={() => setConfirmDeleteMultiple(true)}
+                  disabled={selectedDevisIds.size === 0 || loadingAction}
+                  className="bg-red-400 hover:bg-red-600 text-sm"
+                >
+                  <Trash className="h-4 w-4" />
+                  <span>Supprimer la selection</span>
+                </Button>
+
+                {/* <span className="absolute z-[55] right-0 -translate-x-0 -top-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  Supprimer la selection
+                </span> */}
+              </div>
+            </div>
           </div>
           {loading ? (
             <p className="text-center">Chargement...</p>
@@ -666,36 +700,7 @@ const EstimatePage = () => {
                     <TableHead className="border p-2 text-center">Date de création</TableHead>
                     <TableHead className="border p-2 text-center">
                       <div className="flex flex-col items-center gap-4">
-                        <div className="flex gap-2">
-                          <div className="relative group">
-                            <Button
-                              size="sm"
-                              onClick={unArchiveSelectedDevis}
-                              disabled={selectedDevisIds.size === 0 || loadingAction}
-                              className="bg-gray-400 hover:bg-gray-500 text-sm"
-                            >
-                              <ArchiveRestore className="h-4 w-4" />
-                            </Button>
-                            <span className="absolute z-[55] right-0 -translate-x-0 -top-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                              Désarchiver la selection
-                            </span>
-                          </div>
 
-                          <div className="relative group">
-                            <Button
-                              size="sm"
-                              onClick={() => setConfirmDeleteMultiple(true)}
-                              disabled={selectedDevisIds.size === 0 || loadingAction}
-                              className="bg-red-400 hover:bg-red-600 text-sm"
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
-
-                            <span className="absolute z-[55] right-0 -translate-x-0 -top-3 whitespace-nowrap bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                              Supprimer la selection
-                            </span>
-                          </div>
-                        </div>
                         <label className="flex items-center gap-1 text-sm">
                           <input
                             type="checkbox"
@@ -763,20 +768,41 @@ const EstimatePage = () => {
               {/* Version mobile */}
               <div className="lg:hidden">
                 {devisArchives.length !== 0 && (
-                  <div className="flex items-center justify-center gap-4 my-4">
-                    <Button
-                      className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
-                      onClick={() => setActiveColumn(prev => Math.max(0, prev - 1))}
-                    >
-                      <ChevronLeft />
-                    </Button>
-                    <span className="font-semibold">{tableHeads[activeColumn]}</span>
-                    <Button
-                      className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
-                      onClick={() => setActiveColumn(prev => Math.min(tableHeads.length - 1, prev + 1))}
-                    >
-                      <ChevronRight />
-                    </Button>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-center gap-4 my-4">
+                      <Button
+                        className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
+                        onClick={() => setActiveColumn(prev => Math.max(0, prev - 1))}
+                      >
+                        <ChevronLeft />
+                      </Button>
+                      <span className="font-semibold">{tableHeads[activeColumn]}</span>
+                      <Button
+                        className="py-2 px-3 border rounded-full bg-[#bdc3c7] hover:bg-[#001964]"
+                        onClick={() => setActiveColumn(prev => Math.min(tableHeads.length - 1, prev + 1))}
+                      >
+                        <ChevronRight />
+                      </Button>
+                    </div>
+
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        size="sm"
+                        onClick={unArchiveSelectedDevis}
+                        disabled={selectedDevisIds.size === 0 || loadingAction}
+                        className="bg-gray-400 hover:bg-gray-500 text-xs"
+                      >
+                        <ArchiveRestore className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => setConfirmDeleteMultiple(true)}
+                        disabled={selectedDevisIds.size === 0 || loadingAction}
+                        className="bg-red-400 hover:bg-red-600 text-xs"
+                      >
+                        <Trash className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
                 )}
                 <Table>
@@ -785,24 +811,6 @@ const EstimatePage = () => {
                       <TableHead className="border">{tableHeads[activeColumn]}</TableHead>
                       <TableHead className="border">
                         <div className="flex flex-col items-center gap-2">
-                          <div className="flex gap-2 mt-2">
-                            <Button
-                              size="sm"
-                              onClick={unArchiveSelectedDevis}
-                              disabled={selectedDevisIds.size === 0 || loadingAction}
-                              className="bg-gray-400 hover:bg-gray-500 text-xs"
-                            >
-                              <ArchiveRestore className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => setConfirmDeleteMultiple(true)}
-                              disabled={selectedDevisIds.size === 0 || loadingAction}
-                              className="bg-red-400 hover:bg-red-600 text-xs"
-                            >
-                              <Trash className="h-3 w-3" />
-                            </Button>
-                          </div>
                           <label className="text-xs my-2">
                             <input
                               type="checkbox"
