@@ -583,6 +583,52 @@ const EstimateDetailsPage = () => {
                                         </div>
                                     </div>
 
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                        <div className="pt-4">
+                                            <p className="text-lg font-bold">Photos :</p>
+                                            {devis.virtualTourPhotos?.length > 0 && (
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {devis.virtualTourPhotos.map((photo, idx) => (
+                                                        <a
+                                                            key={idx}
+                                                            href={photo}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="block"
+                                                        >
+                                                            <img
+                                                                src={photo}
+                                                                alt={`Photo ${idx + 1}`}
+                                                                className="w-full h-32 object-cover rounded hover:opacity-90 transition"
+                                                            />
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="pt-4">
+                                            <p className="text-lg font-bold">Vidéos :</p>
+                                            {devis.virtualTourVideos?.length > 0 && (
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {devis.virtualTourVideos.map((video, idx) => (
+                                                        <a
+                                                            key={idx}
+                                                            href={video}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="block"
+                                                        >
+                                                            <video controls className="w-full h-32 object-cover rounded">
+                                                                <source src={video} />
+                                                            </video>
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
                                     <div className="grid grid-cols-1 gap-3 lg:gap-4 my-8">
                                         <p className="text-lg font-bold">Message complémentaire :</p>
                                         <div className="flex items-center">
