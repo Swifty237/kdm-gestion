@@ -585,7 +585,7 @@ const EstimateDetailsPage = () => {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
                                         <div className="pt-4">
-                                            <p className="text-lg font-bold">Photos :</p>
+                                            {devis.virtualTourPhotos?.length > 0 && <p className="text-lg font-bold">Photos :</p>}
                                             {devis.virtualTourPhotos?.length > 0 && (
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {devis.virtualTourPhotos.map((photo, idx) => (
@@ -608,7 +608,7 @@ const EstimateDetailsPage = () => {
                                         </div>
 
                                         <div className="pt-4">
-                                            <p className="text-lg font-bold">Vidéos :</p>
+                                            {devis.virtualTourVideos?.length > 0 && <p className="text-lg font-bold">Vidéos :</p>}
                                             {devis.virtualTourVideos?.length > 0 && (
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {devis.virtualTourVideos.map((video, idx) => (
