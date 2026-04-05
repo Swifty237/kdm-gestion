@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from '@/components/ui/button';
-import { X, Trash2, PenLine, Route, ThumbsUp } from 'lucide-react';
+import { X, Trash2, PenLine, Route, ThumbsUp, Loader } from 'lucide-react';
 import AdjustmentModal from '@/components/AdjustmentModal';
 import { useNavHeight } from '@/context/NavHeightContext';
 import { useToast } from '@/hooks/use-toast';
@@ -376,7 +376,7 @@ const EstimateDetailsPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
-    if (loading) return <p className="text-center w-full">Chargement...</p>;
+    if (loading) return <p className="text-center w-full"> <Loader className="h-4 w-4 animate-spin" /></p>;
     if (!devis) return <p>Devis introuvable.</p>;
 
     return (

@@ -56,9 +56,7 @@ const Navigation = () => {
       `}>
       <div className="w-[90%] lg:w-[80%] flex justify-between flex-col">
         <div className="flex w-full justify-between items-center mb-4">
-          {/* <div className="relative group"> */}
-          <div className="">
-
+          <div className="border-2 border-[#001964] rounded-md">
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               className="w-[17em] px-8 py-1 rounded-md text-white flex items-center justify-between border bg-[#001964]"

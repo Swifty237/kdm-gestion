@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Archive, ArchiveRestore, ChevronLeft, ChevronRight, Trash, Play } from 'lucide-react';
+import { Archive, ArchiveRestore, ChevronLeft, ChevronRight, Trash, Play, Loader } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useNavHeight } from '@/context/NavHeightContext';
@@ -216,9 +216,8 @@ const EstimatePage = () => {
               className="bg-[#16a085] hover:bg-[#1abc9c] text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed flex"
             >
               {loadingManageId === devis._id ? (
-                <span className="flex items-center gap-2">
-                  <span className="animate-spin">⚪</span>
-                  Chargement...
+                <span className="flex items-center">
+                  <Loader className="h-4 w-4 animate-spin" />
                 </span>
               ) : (
                 <Play className="" />
@@ -382,7 +381,9 @@ const EstimatePage = () => {
             </Button>
           </div>
           {loading ? (
-            <p className="text-center">Chargement...</p>
+            <p className="text-center">
+              <Loader className="h-4 w-4 animate-spin" />
+            </p>
           ) : (
             <>
               {/* Tableau grand écran */}
@@ -466,8 +467,7 @@ const EstimatePage = () => {
                                 >
                                   {loadingManageId === devis._id ? (
                                     <span className="flex items-center gap-2">
-                                      <span className="animate-spin">⚪</span>
-                                      Chargement...
+                                      <Loader className="h-4 w-4 animate-spin" />
                                     </span>
                                   ) : (
                                     <Play />
@@ -685,7 +685,9 @@ const EstimatePage = () => {
             </div>
           </div>
           {loading ? (
-            <p className="text-center">Chargement...</p>
+            <p className="text-center">
+              <Loader className="h-4 w-4 animate-spin" />
+            </p>
           ) : (
             <>
               {/* Tableau grand écran */}

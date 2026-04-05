@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { LogIn } from 'lucide-react';
+import { Loader, LogIn } from 'lucide-react';
 import { useState } from 'react';
 import { Eye, EyeOff } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
@@ -140,7 +140,7 @@ const LoginPage = () => {
                   className="w-full bg-[#001964] hover:bg-[#001964]/90 text-xl mt-8"
                   size="lg"
                 >
-                  {loading ? 'Connexion...' : (
+                  {loading ? <Loader className="h-4 w-4 animate-spin" /> : (
                     <>
                       <LogIn className="mr-2 h-4 w-4" />
                       Connexion
