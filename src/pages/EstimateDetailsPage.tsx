@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { X, Trash2, PenLine, Route, ThumbsUp } from 'lucide-react';
 import AdjustmentModal from '@/components/AdjustmentModal';
 import { useNavHeight } from '@/context/NavHeightContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface Devis {
     _id: string;
@@ -76,6 +77,8 @@ const EstimateDetailsPage = () => {
     const [generatedLink, setGeneratedLink] = useState<string | null>(null);
     const [showLinkModal, setShowLinkModal] = useState(false);
 
+    const { toast } = useToast();
+
     const navHeight = useNavHeight();
 
     const handleGenerateLink = async () => {
@@ -95,11 +98,21 @@ const EstimateDetailsPage = () => {
                 setDevis(prev => prev ? { ...prev, virtualTourToken: data.token } : null);
             } else {
                 console.error("Erreur création lien", data.error);
-                alert("Erreur lors de la génération du lien.");
+                toast({
+                    title: "Erreur",
+                    description: "Une erreur est survenue lors de la génération du lien.",
+                    variant: "destructive"
+                });
+                // alert("Erreur lors de la génération du lien.");
             }
         } catch (err) {
             console.error(err);
-            alert("Erreur réseau.");
+            toast({
+                title: "Erreur reseau",
+                description: "Une erreur est survenue lors de la génération du lien.",
+                variant: "destructive"
+            });
+            // alert("Erreur réseau.");
         } finally {
             setIsCreatingLink(false);
         }
@@ -157,11 +170,23 @@ const EstimateDetailsPage = () => {
                     setShowDeleteConfirm(false);
                 } else {
                     console.error("Erreur lors de la suppression:", result.error);
-                    alert(result.error || "Une erreur est survenue lors de la suppression de l'ajustement.");
+                    toast({
+                        title: "Erreur",
+                        description: "Une erreur est survenue lors de la suppression de l'ajustement.",
+                        variant: "destructive"
+                    });
+                    // alert(result.error || "Une erreur est survenue lors de la suppression de l'ajustement.");
                 }
             } catch (err) {
                 console.error("Erreur réseau:", err);
-                alert("Erreur de connexion au serveur.");
+
+                toast({
+                    title: "Erreur reseau",
+                    description: "Erreur de connexion au serveur.",
+                    variant: "destructive"
+                });
+
+                // alert("Erreur de connexion au serveur.");
             } finally {
                 setIsDeletingAdjustment(false);
             }
@@ -265,11 +290,22 @@ const EstimateDetailsPage = () => {
             } else {
                 const error = await response.json();
                 console.error("Erreur lors de la validation:", error);
+                toast({
+                    title: "Erreur",
+                    description: "Une erreur est survenue lors de la validation du devis.",
+                    variant: "destructive"
+                });
                 alert("Une erreur est survenue lors de la validation du devis.");
             }
         } catch (err) {
             console.error("Erreur réseau:", err);
-            alert("Erreur de connexion au serveur.");
+
+            toast({
+                title: "Erreur reseau",
+                description: "Erreur de connexion au serveur.",
+                variant: "destructive"
+            });
+            // alert("Erreur de connexion au serveur.");
         } finally {
             setIsValidating(false);
         }

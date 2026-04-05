@@ -5,11 +5,14 @@ import { Button } from '@/components/ui/button';
 import { LogIn } from 'lucide-react';
 import { useState } from 'react';
 import { Eye, EyeOff } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
 
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+
+  const { toast } = useToast();
 
   const [credentials, setCredentials] = useState({
     login: '',
@@ -54,11 +57,23 @@ const LoginPage = () => {
         }
 
       } else {
-        alert('Erreur : ' + (result.error || 'Identifiants incorrects'));
+
+        toast({
+          title: "Erreur",
+          description: result.error,
+          variant: "destructive"
+        });
+
+        // alert('Erreur : ' + (result.error || 'Identifiants incorrects'));
       }
     } catch (err) {
       console.error(err);
-      alert("Erreur réseau lors de la connexion.");
+      toast({
+        title: "Erreur réseau",
+        description: "Erreur lors de la connexion",
+        variant: "destructive"
+      });
+      // alert("Erreur réseau lors de la connexion.");
     } finally {
       setLoading(false);
     }
