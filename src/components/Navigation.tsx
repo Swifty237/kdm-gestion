@@ -1,5 +1,4 @@
-import { LogOut, Menu, NotebookText, UserCog, UserRoundPlus, X } from "lucide-react";
-import { Button } from "./ui/button";
+import { ChevronDown, ChevronUp, LogOut, Menu, NotebookText, User, UserCog, UserRoundPlus, X } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 
@@ -9,12 +8,20 @@ const Navigation = () => {
   const [hasShadow, setHasShadow] = useState(false);
   const navRef = useRef<HTMLDivElement | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  const userLogin = localStorage.getItem("userLogin");
+  const userName = localStorage.getItem("userName") || "";
+  const userFirstname = localStorage.getItem("userFirstname") || "";
+  const userLogin = localStorage.getItem("userLogin") || "";
+
+  // Priorité : prénom → nom → login
+  const displayName = userFirstname || userName || userLogin;
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userLogin');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userFirstname');
     localStorage.removeItem("estimate_active_tab");
     navigate('/');
   };
@@ -49,26 +56,19 @@ const Navigation = () => {
       `}>
       <div className="w-[90%] lg:w-[80%] flex justify-between flex-col">
         <div className="flex w-full justify-between items-center mb-4">
-          <div className="relative group">
-            <Button
-              type="button"
-              onClick={handleLogout}
-              className="bg-[#001964] hover:bg-[#001964]/90 text-sm lg:text-base"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
+          {/* <div className="relative group"> */}
+          <div className="">
 
-            {/* Tooltip */}
-            <span
-              className=" absolute right-0 -translate-x-1/2 -top-5
-                          whitespace-nowrap
-                          bg-black text-white text-xs px-2 py-1 rounded
-                          opacity-0 group-hover:opacity-100
-                          transition-opacity duration-200
-                        "
+            <button
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="w-[17em] px-8 py-1 rounded-md text-white flex items-center justify-between border bg-[#001964]"
             >
-              Déconnexion
-            </span>
+              <div className="flex items-center">
+                <User className="h-[18px] mr-2" />
+                <span className="text-lg">{displayName}</span>
+              </div>
+              {isUserMenuOpen ? <ChevronUp /> : <ChevronDown />}
+            </button>
           </div>
 
           <button
@@ -102,25 +102,14 @@ const Navigation = () => {
             </>
           ) : (
             <>
-              <div className="hidden lg:flex items-center justify-end space-x-20">
-                <Link to="/estimate" className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-lg ${location.pathname === "/estimate"
+              <div className="hidden lg:flex items-center justify-end">
+                <Link to="/estimate" className={`flex items-center transition-colors duration-200 hover:text-[#001964] text-lg ${location.pathname === "/estimate"
                   ? 'text-[#001964]'
                   : 'text-muted-foreground'
                   }`}
                 >
                   <NotebookText className="mr-2 h-5 w-5" />
                   <span>Demandes de devis</span>
-                </Link>
-
-                <Link
-                  to="/passwordModif"
-                  className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-lg ${location.pathname === "/passwordModif"
-                    ? 'text-[#001964]'
-                    : 'text-muted-foreground'
-                    }`}
-                >
-                  <UserCog className="mr-2 h-5 w-5" />
-                  Modifier le mot de passe
                 </Link>
               </div>
             </>
@@ -164,7 +153,7 @@ const Navigation = () => {
           <>
             {/* Mobile Menu */}
             {isMenuOpen && (
-              <div className="lg:hidden border-t border-border backdrop-blur-sm mt-2">
+              <div className="lg:hidden border-t border-border backdrop-blur-sm mt-2 bg-white shadow-xl">
                 <div className="px-2 pt-2 pb-3 space-y-4">
                   <Link
                     to="/estimate"
@@ -177,22 +166,49 @@ const Navigation = () => {
                     <NotebookText className="mr-2 h-5 w-5" />
                     <span>Demandes de devis</span>
                   </Link>
-
-                  <Link
-                    to="/passwordModif"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center font-bold transition-colors duration-200 hover:text-[#001964] text-lg py-2 ${location.pathname === "/passwordModif"
-                      ? 'text-[#001964]'
-                      : 'text-muted-foreground'
-                      }`}
-                  >
-                    <UserCog className="mr-2 h-5 w-5" />
-                    Modifier le mot de passe
-                  </Link>
                 </div>
               </div>
             )}
           </>
+        )}
+
+        {isUserMenuOpen && (
+          <div className="border-t border-border backdrop-blur-sm px-4 bg-[#ecf0f1] shadow-xl">
+            <div className="px-2 pt-2 pb-3 space-y-4">
+              <Link
+                to="/passwordModif"
+                className={`flex items-center text-lg transition-colors duration-200 hover:text-[#001964] ${location.pathname === "/passwordModif"
+                  ? 'text-[#001964]'
+                  : 'text-muted-foreground'
+                  }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                  }}
+                  className="flex items-center"
+                >
+                  <UserCog className="h-[18px] mr-2" />
+                  Modifier le mot de passe
+                </button>
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsUserMenuOpen(false);
+                  handleLogout();
+                }}
+                className="flex items-center text-lg text-muted-foreground hover:text-[#001964]"
+              >
+                <span className="flex items-center">
+                  <LogOut className="h-[18px] mr-2" />
+                  Déconnexion
+                </span>
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </nav>

@@ -327,7 +327,7 @@ const EstimatePage = () => {
   return (
     <div className="flex flex-col items-center min-h-screen">
       <div
-        className="bg-[#001964] w-full h-[2px] fixed"
+        className="border w-full fixed"
         style={{
           top: `${navHeight}px`,
           zIndex: 99
@@ -341,12 +341,12 @@ const EstimatePage = () => {
         >
           <TabsTrigger
             value="nonTraites"
-            className="bg-white data-[state=active]:bg-[#001964] data-[state=active]:text-white shadow-md text-lg w-full py-4">
+            className="bg-white border-2 data-[state=active]:border-none data-[state=active]:bg-[#001964] data-[state=active]:text-white shadow-lg text-lg w-full py-4">
             Demandes à traiter
           </TabsTrigger>
           <TabsTrigger
             value="archives"
-            className="bg-white data-[state=active]:bg-[#001964] data-[state=active]:text-white shadow-md text-lg w-full py-4"
+            className="bg-white border-2 data-[state=active]:border-none data-[state=active]:bg-[#001964] data-[state=active]:text-white shadow-lg text-lg w-full py-4"
           >
             Demandes archivées
           </TabsTrigger>
@@ -453,7 +453,7 @@ const EstimatePage = () => {
                         <TableCell className="border p-2">
                           <div className="flex justify-center">
                             {devis.inManagement ? (
-                              <span className="bg-green-100 text-green-800 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                              <span className="bg-green-100 text-green-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
                                 En cours...
                               </span>
                             ) : (
@@ -462,7 +462,7 @@ const EstimatePage = () => {
                                   type="button"
                                   onClick={() => handleManageSingleDevis(devis._id)}
                                   disabled={loadingManageId === devis._id}
-                                  className="bg-[#16a085] hover:bg-[#1abc9c] text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed flex"
+                                  className="bg-green-600 hover:bg-green-600/90 text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed flex"
                                 >
                                   {loadingManageId === devis._id ? (
                                     <span className="flex items-center gap-2">

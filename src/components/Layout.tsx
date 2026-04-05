@@ -29,7 +29,7 @@ const Layout = ({ children }: LayoutProps) => {
   const shouldHideNav = hideNavRoutes.includes(location.pathname);
 
   return (
-    <div className="min-h-screen">
+    <div className=" relative min-h-screen">
       {!shouldHideNav && <Navigation />}
       <main style={{ paddingTop: `${navHeight}px` }}>
         <NavHeightProvider height={navHeight}>

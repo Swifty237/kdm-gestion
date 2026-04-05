@@ -42,10 +42,11 @@ const LoginPage = () => {
       const result = await response.json();
 
       if (response.ok) {
-        // Stocke le token (ou autre info utile)
         if (result.token) {
           localStorage.setItem('authToken', result.token);
-          localStorage.setItem("userLogin", credentials.login);
+          localStorage.setItem('userLogin', result.user.login);
+          localStorage.setItem('userName', result.user.userName);
+          localStorage.setItem('userFirstname', result.user.userFirstname);
         }
 
         setCredentials({ login: '', password: '' });
@@ -55,7 +56,6 @@ const LoginPage = () => {
         } else {
           navigate("/estimate");
         }
-
       } else {
 
         toast({
