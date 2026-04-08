@@ -810,7 +810,11 @@ const EstimateDetailsPage = () => {
                             <Button
                                 onClick={() => {
                                     navigator.clipboard.writeText(generatedLink || '');
-                                    alert("Lien copié !");
+                                    toast({
+                                        description: "Lien copié !",
+                                        className: "bg-green-600 text-white border-none",
+                                    });
+                                    setShowLinkModal(false);
                                 }}
                             >
                                 Copier

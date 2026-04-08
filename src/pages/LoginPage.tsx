@@ -53,8 +53,10 @@ const LoginPage = () => {
 
         if (credentials.login === "admin") {
           navigate("/administration");
+          setLoading(false);
         } else {
           navigate("/estimate");
+          setLoading(false);
         }
       } else {
 
@@ -63,7 +65,7 @@ const LoginPage = () => {
           description: result.error,
           variant: "destructive"
         });
-
+        setLoading(false);
         // alert('Erreur : ' + (result.error || 'Identifiants incorrects'));
       }
     } catch (err) {
