@@ -381,7 +381,7 @@ const EstimateDetailsPage = () => {
         <div className="flex flex-col justify-center items-center min-h-screen p-4">
 
             <div
-                className="bg-[#001964] w-full h-[5px] fixed"
+                className="border w-full fixed"
                 style={{
                     top: `${navHeight}px`,
                     zIndex: 99
@@ -391,7 +391,7 @@ const EstimateDetailsPage = () => {
 
             <div
                 className="sticky w-full bg-white pb-8 border-b shadow-lg z-10"
-                style={{ top: `${navHeight + 5}px` }}
+                style={{ top: `${navHeight}px` }}
             >
                 <div className="flex justify-between items-center p-4">
                     <h2 className="text-2xl font-bold text-[#001964]">

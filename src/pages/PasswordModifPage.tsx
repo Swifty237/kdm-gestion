@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, Send } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavHeight } from '@/context/NavHeightContext';
 
 const PasswordModifPage = () => {
     const { toast } = useToast();
@@ -21,6 +22,8 @@ const PasswordModifPage = () => {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    const navHeight = useNavHeight();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -77,9 +80,14 @@ const PasswordModifPage = () => {
     return (
         <div className="flex flex-col justify-center items-center h-[100vh]">
 
-            {/* <div className="w-[55%] flex">
-                
-            </div> */}
+            <div
+                className="border w-full fixed"
+                style={{
+                    top: `${navHeight}px`,
+                    zIndex: 99
+                }}
+            >
+            </div>
 
             <section className="py-8 lg:py-16 px-4 sm:px-8 lg:px-16 mb-8 lg:mb-16 w-full">
                 <div className="max-w-6xl mx-auto">
