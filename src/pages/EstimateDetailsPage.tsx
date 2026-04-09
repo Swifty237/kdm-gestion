@@ -31,7 +31,6 @@ interface Devis {
     link?: string;
     virtualTourToken?: string;      // token unique pour le lien
     virtualTourPhotos?: string[];    // chemins des photos (max 20)
-    virtualTourVideos?: string[];    // chemins des vidéos
     virtualTourCreatedAt?: string;   // date de création du lien
     departure: {
         surface: string;
@@ -72,7 +71,6 @@ const EstimateDetailsPage = () => {
     const [adjustmentAmount, setAdjustmentAmount] = useState('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isDeletingAdjustment, setIsDeletingAdjustment] = useState(false); // Nouvel état pour la suppression
-    // const [isDeletingLink, setIsDeletingLink] = useState(false);
     const [isCreatingLink, setIsCreatingLink] = useState(false);
     const [generatedLink, setGeneratedLink] = useState<string | null>(null);
     const [showLinkModal, setShowLinkModal] = useState(false);
@@ -619,50 +617,27 @@ const EstimateDetailsPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
-                                        <div className="pt-4">
-                                            {devis.virtualTourPhotos?.length > 0 && <p className="text-lg font-bold">Photos :</p>}
-                                            {devis.virtualTourPhotos?.length > 0 && (
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {devis.virtualTourPhotos.map((photo, idx) => (
-                                                        <a
-                                                            key={idx}
-                                                            href={photo}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="block"
-                                                        >
-                                                            <img
-                                                                src={photo}
-                                                                alt={`Photo ${idx + 1}`}
-                                                                className="w-full h-32 object-cover rounded hover:opacity-90 transition"
-                                                            />
-                                                        </a>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="pt-4">
-                                            {devis.virtualTourVideos?.length > 0 && <p className="text-lg font-bold">Vidéos :</p>}
-                                            {devis.virtualTourVideos?.length > 0 && (
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {devis.virtualTourVideos.map((video, idx) => (
-                                                        <a
-                                                            key={idx}
-                                                            href={video}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="block"
-                                                        >
-                                                            <video controls className="w-full h-32 object-cover rounded">
-                                                                <source src={video} />
-                                                            </video>
-                                                        </a>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
+                                    <div className="pt-4">
+                                        {devis.virtualTourPhotos?.length > 0 && <p className="text-lg font-bold">Photos :</p>}
+                                        {devis.virtualTourPhotos?.length > 0 && (
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {devis.virtualTourPhotos.map((photo, idx) => (
+                                                    <a
+                                                        key={idx}
+                                                        href={photo}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="block"
+                                                    >
+                                                        <img
+                                                            src={photo}
+                                                            alt={`Photo ${idx + 1}`}
+                                                            className="w-full h-32 object-cover rounded hover:opacity-90 transition"
+                                                        />
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-3 lg:gap-4 my-8">
