@@ -323,8 +323,16 @@ const EstimatePage = () => {
     ? devisNonArchives.length > 0 && devisNonArchives.every(d => selectedDevisIds.has(d._id))
     : devisArchives.length > 0 && devisArchives.every(d => selectedDevisIds.has(d._id));
 
+
+  if (loading) return (
+    <div className="flex justify-center mt-8 h-40 items-center p-8">
+      <Loader className="h-4 w-4 animate-spin" />
+    </div>
+  );
+
   return (
     <div className="flex flex-col items-center min-h-screen">
+
       <div
         className="border w-full fixed"
         style={{

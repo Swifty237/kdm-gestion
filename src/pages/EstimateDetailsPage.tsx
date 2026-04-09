@@ -620,7 +620,7 @@ const EstimateDetailsPage = () => {
                                     <div className="pt-4">
                                         {devis.virtualTourPhotos?.length > 0 && <p className="text-lg font-bold">Photos :</p>}
                                         {devis.virtualTourPhotos?.length > 0 && (
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                                                 {devis.virtualTourPhotos.map((photo, idx) => (
                                                     <a
                                                         key={idx}

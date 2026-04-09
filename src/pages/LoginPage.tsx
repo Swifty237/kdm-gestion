@@ -52,11 +52,11 @@ const LoginPage = () => {
         setCredentials({ login: '', password: '' });
 
         if (credentials.login === "admin") {
+          setLoading(false);
           navigate("/administration");
-          setLoading(false);
         } else {
-          navigate("/estimate");
           setLoading(false);
+          navigate("/estimate");
         }
       } else {
 
