@@ -374,7 +374,12 @@ const EstimateDetailsPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
-    if (loading) return <p className="text-center w-full"> <Loader className="h-4 w-4 animate-spin" /></p>;
+    if (loading) return (
+        <div className="flex justify-center mt-8 h-40 items-center p-8">
+            <Loader className="h-4 w-4 animate-spin" />
+        </div>
+    );
+
     if (!devis) return <p>Devis introuvable.</p>;
 
     return (
